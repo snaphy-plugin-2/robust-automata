@@ -30,19 +30,20 @@ angular.module($snaphy.getModuleName())
 }]) //End Run
 
 
-
 //Create state to generate at runTime..
 .run(['runtimeStates', function(runtimeStates) {
     var employeeRole = $snaphy.loadSettings('login', "employeeRole");
     var redirectOtherWise = $snaphy.loadSettings('login', 'onLoginRedirectState');
     var databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
+    var routePrefixName = $snaphy.loadSettings('robustAutomata', "routePrefixName") || "";
 
+    routePrefixName = formatRoutePrefix(routePrefixName);
 
     //Loading states at run time.
     databasesList.forEach(function(stateName) {
         //Add states at run time..
         runtimeStates.addState(stateName,  {
-            url: '/' + stateName.toLowerCase().trim(),
+            url: '/' + routePrefixName  + stateName.toLowerCase().trim(),
             templateUrl: '/robustAutomata/views/robustAutomata.html',
             controller: 'robustAutomataControl',
 
@@ -60,7 +61,7 @@ angular.module($snaphy.getModuleName())
         //Add another state for saving users..
         //Add states at run time..
         runtimeStates.addState(stateName + '.save', {
-            url         : '/' + stateName.toLowerCase().trim() + '/saveData',
+            url         : '/saveData',
             templateUrl : '/robustAutomata/views/saveData.html',
             controller  : 'robustAutomataControl',
             parent      : stateName,
@@ -79,3 +80,14 @@ angular.module($snaphy.getModuleName())
 
 
 }]);
+
+
+var formatRoutePrefix = function(routePrefixName){
+    routePrefixName = routePrefixName.replace(/\/$/, '');
+
+    if(routePrefixName){
+        routePrefixName = routePrefixName + "/";
+    }
+
+    return routePrefixName;
+};

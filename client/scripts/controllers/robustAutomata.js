@@ -90,8 +90,8 @@ angular.module($snaphy.getModuleName())
             //Scroll
             $timeout(function(){
                 App.layout('side_scroll_off');
-            }, 10)
-        }
+            }, 0);
+        };
 
 
 
@@ -474,7 +474,9 @@ angular.module($snaphy.getModuleName())
         $scope.getParams = function(params, rowObject) {
             for (var key in params) {
                 if (params.hasOwnProperty(key)) {
-                    params[key] = rowObject[key];
+                    if(rowObject[key]){
+                        params[key] = rowObject[key];
+                    }
                 }
             }
             return params;
