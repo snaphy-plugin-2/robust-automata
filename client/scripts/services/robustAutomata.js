@@ -317,12 +317,9 @@ angular.module($snaphy.getModuleName())
                 //Error occured..in fetching data..
                 console.error(httpResponse);
             });
-
-
-
-
             return deferred.promise;
-        }
+        };
+        
 
         return {
             getPage: getPage,

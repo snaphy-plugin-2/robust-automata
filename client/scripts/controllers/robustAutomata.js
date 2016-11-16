@@ -131,10 +131,11 @@ angular.module($snaphy.getModuleName())
 
 
         $scope.dateInSeconds = function(rowObject, columnHeader, colKey) {
+            var date;
             if(colKey){
                 //For related type object..
                 var colValue = $scope.getRelationColumnValue(rowObject, columnHeader, colKey);
-                var date     = $scope.toJsDate(colValue);
+                date = $scope.toJsDate(colValue);
                 if(!date){
                     return null;
                 }else{
@@ -143,7 +144,7 @@ angular.module($snaphy.getModuleName())
             }
             else{
                 var val = $scope.getColValue(rowObject, columnHeader);
-                var date = new Date(val);
+                date = new Date(val);
                 return date.getTime();
             }
         };
@@ -723,8 +724,10 @@ angular.module($snaphy.getModuleName())
         /**
          * Model for storing the model structure..
          * @param formStructure
+         * @param formData
          * @param formModel
-         * @param formID refrencing to the id attribute of the  form.
+         * @param goBack
+         * @param modelInstance refrencing to the id attribute of the  form.
          */
         $scope.saveForm = function(formStructure, formData, formModel, goBack, modelInstance) {
             if(ImageUploadingTracker.isUploadInProgress()){
@@ -894,24 +897,7 @@ angular.module($snaphy.getModuleName())
         };
 
 
-        var addRelationDummyValue = function(relationArr, element, value) {
-            relationArr.forEach(function(rel) {
-                //if relationtype is hasManyThrough
-                if (Object.prototype.toString.call(rel) === "[object Object]") {
-                    if (rel.relationName) {
-                        element[rel.relationName] = value;
-                    }
-                } else {
-                    if (!element[rel]) {
-                        element[rel] = value;
-                    }
-                }
-            });
-            return element;
-        };
-
-
-
+        
         //Initialize default names of the current state..
         var init = function() {
             for (var i = 0; i < $scope.databasesList.length; i++) {
