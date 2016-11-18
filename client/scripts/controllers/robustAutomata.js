@@ -158,26 +158,27 @@ angular.module($snaphy.getModuleName())
             if(filterType === "select"){
                 if(model){
                    $scope.where = prepareWhereQuery($scope.where, filterType, columnName, model);
+                    //Now redraw the table..
+                   $scope.refreshData();
                 }
 
-                //Now redraw the table..
-                $scope.refreshData();
+
             }else if (filterType === "number") {
                 //console.log("select", columnName, model);
                 if(model){
                     $scope.where = prepareWhereQuery($scope.where, filterType, columnName, model);
+                    //Now redraw the table..
+                    $scope.refreshData();
                 }
-                //Now redraw the table..
-                $scope.refreshData();
             }
             else if (filterType === "date") {
                 //console.log("select", columnName, model);
                 if(model){
                     $scope.where = prepareWhereQuery($scope.where, filterType, columnName, model);
-                    
+                    //Now redraw the table..
+                    $scope.refreshData();
                 }
-                //Now redraw the table..
-                $scope.refreshData();
+
 
             }else if(/^related.+/.test(filterType)){
                 if(model){
@@ -250,10 +251,7 @@ angular.module($snaphy.getModuleName())
 
                 }
 
-            }else{
-
             }
-            //console.info("modifed where", $scope.where);
 
         };
 
@@ -372,7 +370,7 @@ angular.module($snaphy.getModuleName())
             }
 
             return null;
-        }
+        };
 
         //Example addInlineFilterResetMethod('#automataTable', 'number', inlineSearch, header)
         $scope.addInlineFilterResetMethod = function(tableId, type, modelObj, columnName){
@@ -1020,7 +1018,7 @@ angular.module($snaphy.getModuleName())
 
 
         //Clear the data showing in the table.
-        $scope.clearData = function(tableState, ctrl){
+        $scope.clearData = function(){
             $scope.displayed.length = 0;
             $scope.pagesReturned = 0;
             $scope.totalResults = 0;

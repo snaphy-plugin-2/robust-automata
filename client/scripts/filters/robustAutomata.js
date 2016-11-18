@@ -12,6 +12,14 @@ angular.module($snaphy.getModuleName())
 })
 
 
+//Turn underscore to spaces..
+.filter('underscoreless', function () {
+    return function (input) {
+        return input.replace(/_/g, ' ');
+    };
+})
+
+
 .filter('myStrictFilter', function($filter) {
     return function(input, predicate) {
         return $filter('filter')(input, predicate, true);
