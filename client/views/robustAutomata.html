@@ -365,8 +365,14 @@
                                                     {{getRelationColumnValue(rowObject, header, colKey)}}
                                                 </span>
                                             </span>
+
+                                            <span ng-if="tableConfig.onClick !== undefined">
+                                                <!--Display link here..-->
+                                                <a ui-sref="{{tableConfig.onClick.state}}({{getParams(tableConfig.onClick.params, rowObject)}})">{{getRelationColumnValue(rowObject, header, colKey)}}</a>
+                                            </span>
+
                                             <!-- Default case -->
-                                            <span ng-if="tableConfig.tag === undefined && !tableConfig.date">
+                                            <span ng-if="tableConfig.tag === undefined && !tableConfig.date && !tableConfig.onClick">
                                                 {{getRelationColumnValue(rowObject, header, colKey)  | cut:true:50:' ...'}}
                                             </span>
                                         </span>

@@ -65,12 +65,12 @@ angular.module($snaphy.getModuleName())
     };
 }])
 
-.filter('camelCaseToSpaces', function($filter){
+.filter('camelCaseToSpaces', ["$filter", function($filter){
     return function(input){
         var val =  input.replace(/([A-Z])/g, ' $1').replace(/^./, function(str){ return str.toUpperCase(); });
         return val.trim();
     };
-})
+}])
 
 .filter('unique', function() {
     return function(arr, field) {

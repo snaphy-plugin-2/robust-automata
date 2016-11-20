@@ -474,7 +474,13 @@ angular.module($snaphy.getModuleName())
             for (var key in params) {
                 if (params.hasOwnProperty(key)) {
                     if(rowObject[key]){
-                        params[key] = rowObject[key];
+                        var searchKey =  params[key];
+                        if(searchKey){
+                            if(rowObject[searchKey]){
+                                params[key] = rowObject[searchKey];
+                            }
+                        }
+
                     }
                 }
             }
