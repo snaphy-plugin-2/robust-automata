@@ -687,6 +687,25 @@ angular.module($snaphy.getModuleName())
             }
         };
 
+        /**
+         * Fetch the header title. Prefer the label if provided first.
+         * @param schema
+         * @param header
+         * @return {string} Title of header.
+         */
+        $scope.getHeaderTitle = function(schema, header){
+            //First convert the header to optimal type..
+            var new_header = header.replace(/\./, "_");
+            if (schema.tables) {
+                if (schema.tables[new_header]) {
+                    if (schema.tables[new_header].label) {
+                        return schema.tables[new_header].label;
+                    }
+                }
+            }
+            return header;
+        };
+
 
 
 

@@ -577,7 +577,6 @@ angular.module($snaphy.getModuleName())
     return {
         restrict: 'A',
         link: function(scope) {
-
                 $timeout(function() {
                     $(function() {
                         // Init page helpers (BS Datepicker + BS Colorpicker + Select2 + Masked Input + Tags Inputs plugins)
@@ -589,12 +588,13 @@ angular.module($snaphy.getModuleName())
     }; // End of return
 }])
 
+
+
 .directive('snaphyRaLoadSelect', ['$timeout', function($timeout) {
     return {
         restrict: 'A',
         link: function(scope) {
-
-                $timeout(function() {
+            $timeout(function() {
                     $(function() {
                         // Init page helpers (BS Datepicker + BS Colorpicker + Select2 + Masked Input + Tags Inputs plugins)
                         //App.initHelpers(['datepicker']);
