@@ -71,7 +71,7 @@ angular.module($snaphy.getModuleName())
                     throughModelService.find({
                         filter: filter
                     }, function(relatedDataValue) {
-                        console.log("Related hasManyThrough data fetched successfully.");
+                        //console.log("Related hasManyThrough data fetched successfully.");
                         element[relationObj.relationName] = relatedDataValue;
                     }, function() {
                         console.error("error fetching hasManyThrough data");

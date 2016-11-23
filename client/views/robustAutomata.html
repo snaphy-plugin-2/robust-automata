@@ -271,9 +271,7 @@
                                                tableConfig = findModelPropertyTableConfig(schema.tables, header);"
                                     ng-repeat="header in schema.header"
                                     style="width:100px;word-wrap:break-word;">
-
-
-                                    <span data-sort="{{getColValue(rowObject, header)}}"  data-filter="{{getColValue(rowObject, header)}}" ng-if="colType === '[object String]' || colType === '[object Boolean]'">
+                                    <span data-sort="{{getColValue(rowObject, header)}}"  data-filter="{{getColValue(rowObject, header)}}" ng-if="colType === '[object String]' || colType === '[object Boolean]' || colType === '[object Number]'">
                                         <span ng-if="tableConfig.onClick !== undefined">
                                             <!--Display link here..-->
                                             <a ui-sref="{{tableConfig.onClick.state}}({{getParams(tableConfig.onClick.params, rowObject)}})">{{getColValue(rowObject, header)}}</a>
@@ -298,10 +296,7 @@
                                             {{getColValue(rowObject, header) | cut:true:50:' ...'}}
                                         </span>
                                     </span>
-                                    <span ng-if="colType === '[object Number]'">
-                                        <!--Do string populated work here...-->
-                                        {{getColValue(rowObject, header)}}
-                                    </span>
+
                                     <span ng-if="colType === '[object Array]'">
                                         <!--Do string populated work here...-->
                                         <!-- {{getColValue(rowObject, header)}} -->
@@ -325,10 +320,10 @@
 
 
                                     <!-- In case of Object or RELATED DATA hasOne or BelongTo type data.. -->
-
                                     <span ng-init="colType = getRelationColumnType (rowObject, header, colKey, colType);
                                           colValue = getRelationColumnValue(rowObject, header, colKey);"
                                           ng-if="colType === '[object Object]'">
+
                                         <!--Do string populated work here...-->
                                         <ul ng-if="colType === '[object Object]'">
                                             <li style="margin-top: 10px;" ng-init="objColType = checkType(colValue, key);" ng-repeat="(key, value) in colValue">
@@ -377,7 +372,6 @@
                                             </span>
                                         </span>
                                     </span>
-
                                 </td>
                                 <!-- For adding table edit and delete options. -->
                                 <td  class="text-center">

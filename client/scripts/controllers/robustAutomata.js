@@ -306,7 +306,7 @@ angular.module($snaphy.getModuleName())
                     keyName = columnHeader;
                 } else {
                     //Its a relational header properties name... map the header.. replace `customer_name` to name
-                    var patt = /\.[A-Z0-9a-z]+$/;
+                    var patt = /\.[A-Z0-9a-z\-_\$]+$/;
                     keyName = columnHeader.replace(patt, '');
                 }
             }
@@ -417,7 +417,7 @@ angular.module($snaphy.getModuleName())
          */
         $scope.getColumnKey = function(columnHeader) {
             //var keyName;
-            var patt = /^[A-Z0-9a-z-$]+\./;
+            var patt = /^[A-Z0-9a-z\-_\$]+\./;
             return columnHeader.replace(patt, '');
         };
 
