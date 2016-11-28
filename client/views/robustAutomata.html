@@ -432,35 +432,35 @@
                 </div><!--block-content-->
             </div>
             <!-- ng disabled removed as now ng-disabled="!enableButton(schema.form)" -->
-            <div class="modal-footer">
-                <div class="row">
-                    <div class="col-xs-3">
-                        <button data-target="#addDataModal"  class="btn btn-sm btn-default "  type="button" data-dismiss="modal">Close</button>
-                        <button class="btn btn-sm btn-default "  style="margin-right:20px;" type="button" ng-click="resetSavedForm(schema.form)">Reset data</button>
-                    </div>
-                    <div class="col-xs-9">
-                        <button type="button" class="btn btn-sm btn-default"><i class="si si-printer"></i> Print</button>
-                        <button type="button" class="btn btn-sm btn-default"><i class="si si-printer"></i> Save And Print</button>
-                        <button
+            <div class="modal-footer" style="clear:both">
+                <div >
+                    <div class="row">
+                        <div class="col-xs-3 text-left">
+                            <button data-target="#addDataModal"  class="btn btn-sm btn-default "  type="button" data-dismiss="modal">Close</button>
+                            <button class="btn btn-sm btn-default"  type="button" ng-click="resetSavedForm(schema.form)">Reset data</button>
+                        </div>
+                        <div class="col-xs-9">
+                            <button type="button" class="btn btn-sm btn-default"><i class="si si-printer"></i> Print</button>
+                            <button type="button" class="btn btn-sm btn-default"><i class="si si-printer"></i> Save And Print</button>
+                            <button
 
-                                class="btn btn-sm btn-default"
-                                ng-click="saveForm(schema, schema.form,  saveFormData, true, '#addDataModal')">
-                            <i class="fa fa-save"></i>
-                            Save
-                        </button>
-                        <button
+                                    class="btn btn-sm btn-default"
+                                    ng-click="saveForm(schema, schema.form,  saveFormData, true, '#addDataModal')">
+                                <i class="fa fa-save"></i>
+                                Save
+                            </button>
+                            <button
 
-                                type="submit"
-                                class="btn btn-sm bg-primary-dark"
-                                style="color:#fff;"
-                                ng-click="saveForm(schema, schema.form, saveFormData, false)" >
-                            <i class="fa fa-save"></i>
-                            Save and add another
-                        </button>
+                                    type="submit"
+                                    class="btn btn-sm bg-primary-dark"
+                                    style="color:#fff;"
+                                    ng-click="saveForm(schema, schema.form, saveFormData, false)" >
+                                <i class="fa fa-save"></i>
+                                Save and add another
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-
             </div>
         </div>
     </div>
