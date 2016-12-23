@@ -570,7 +570,7 @@ angular.module($snaphy.getModuleName())
                 }); //timeout method..
             } //End of Link function...
     }; // End of return
-}]);
+}])
 
 
 
