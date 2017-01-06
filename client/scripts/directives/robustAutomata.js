@@ -440,6 +440,16 @@ angular.module($snaphy.getModuleName())
             'label': '@label',
             'model': '@model',
             'icon': '@icon',
+            //Format
+            /**
+             * Useful in case of hasAndBelongToMany relationship
+             * "options":{
+                            relationType:"hasAndBelongToMany",
+                            id: function(){ return settings.config.brand.id } || "asdasd34234",
+                            relation: "customers"
+                        }
+             */
+            'options': "=?options",
             'propObj': '=propObj',
             'modelValues': '=modelValues',
             'fetchLocally': '=fetchLocally'
@@ -517,22 +527,46 @@ angular.module($snaphy.getModuleName())
                         return propObj.where;
                     };
 
+
                     var fetchDataFromServer = function() {
                         var where = prepareWhereObj(scope.propObj);
                         var modelService = Database.loadDb(scope.model);
-                        //Now fetch the data from the server..
-                        modelService.count({
-                            where: where
-                        }, function(value, responseHeaders) {
-                            $timeout(function(){
-                                //console.log(value);
-                                //Now populate the value..
-                                scope.value = value.count;
-                            });
+                        var manyToManyRelationExists = false;
+                        if(scope.options){
+                            if(scope.options.relationType === "hasAndBelongToMany"){
+                                manyToManyRelationExists = true;
+                            }
+                        }
+                        if(manyToManyRelationExists){
+                            //Now fetch the data from the server..
+                            modelService[scope.options.relation].count({
+                                id: typeof scope.options.id === "function" ? scope.options.id(): scope.options.id ,
+                                where: where
+                            }, function(value, responseHeaders) {
+                                $timeout(function(){
+                                    //console.log(value);
+                                    //Now populate the value..
+                                    scope.value = value.count;
+                                });
+                            }, function(respHeader) {
+                                console.error("Error fetching widget data from the server.");
+                            }); //modelService
+                        }else{
+                            //Now fetch the data from the server..
+                            modelService.count({
+                                where: where
+                            }, function(value, responseHeaders) {
+                                $timeout(function(){
+                                    //console.log(value);
+                                    //Now populate the value..
+                                    scope.value = value.count;
+                                });
 
-                        }, function(respHeader) {
-                            console.error("Error fetching widget data from the server.");
-                        }); //modelService
+                            }, function(respHeader) {
+                                console.error("Error fetching widget data from the server.");
+                            }); //modelService
+                        }
+
                     };
 
                     //Now initialize the directive..
