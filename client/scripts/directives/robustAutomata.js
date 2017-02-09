@@ -607,30 +607,6 @@ angular.module($snaphy.getModuleName())
 }])
 
 
-
-.directive('snaphyRaLoadDate', ['$timeout', function($timeout) {
-    return {
-        restrict: 'A',
-        link: function(scope, element) {
-                $timeout(function() {
-                    $(function() {
-                        // Init page helpers (BS Datepicker + BS Colorpicker + Select2 + Masked Input + Tags Inputs plugins)
-                        //App.initHelpers(['datepicker']);
-                        //scope.initializePlugin(['datepicker']);
-                        // Init datepicker (with .js-datepicker and .input-daterange class)
-                        jQuery(element).add('.input-daterange').datepicker({
-                            weekStart: 1,
-                            autoclose: true,
-                            todayHighlight: true
-                        });
-                    });
-                }); //timeout method..
-            } //End of Link function...
-    }; // End of return
-}])
-
-
-
 .directive('snaphyRaLoadSelect', ['$timeout', function($timeout) {
     return {
         restrict: 'A',
