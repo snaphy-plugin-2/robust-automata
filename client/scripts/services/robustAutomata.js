@@ -174,6 +174,7 @@ angular.module($snaphy.getModuleName())
                 }
             }
 
+
             //where.or = []
             //Prepare filter..
             var skip = start;
