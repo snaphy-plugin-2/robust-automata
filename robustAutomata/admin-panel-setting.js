@@ -8,8 +8,10 @@
 var settings = {
   "defaultTemplate": true,
   "tablePanelId": "#automataWidget",
+  "routePrefixName" : "data",
   loadDatabases: [
-    "Employee"
+      "Employee",
+      "Customer"
   ]
 };
 
