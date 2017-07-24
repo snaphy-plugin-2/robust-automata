@@ -39,7 +39,7 @@
         </robust-widget-added>
 
 
-        <div class="col-sm-6 col-lg-3">
+        <div ng-if="schema.settings.create !== false"  class="col-sm-6 col-lg-3">
             <a class="block block-bordered block-link-hover3" style="cursor:pointer" ng-click="resetSavedForm(schema.form)"   >
                 <table class="block-table text-center">
                     <tbody>
