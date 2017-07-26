@@ -3,9 +3,9 @@
 angular.module($snaphy.getModuleName())
 
 //Controller for robustAutomataControl ..
-.controller('robustAutomataControl', ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q',
-    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q) {
-        //Checking if default templating feature is enabled..
+.controller('robustAutomataControl', ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q', '$rootScope',
+    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q, $rootScope) {
+        //Checking if default templeting feature is enabled..
 
 
 
@@ -26,6 +26,7 @@ angular.module($snaphy.getModuleName())
         var currentState = $state.current.name;
         $scope.currentState = currentState;
         var defaultTemplate = $snaphy.loadSettings('robustAutomata', "defaultTemplate");
+        var onSchemaFetched = $snaphy.loadSettings('robustAutomata', "onSchemaFetched");
         $scope.databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
         //Id for tablePanel
         var tablePanelId = $snaphy.loadSettings('robustAutomata', "tablePanelId");
@@ -161,8 +162,6 @@ angular.module($snaphy.getModuleName())
                     //Now redraw the table..
                    $scope.refreshData();
                 }
-
-
             }else if (filterType === "number") {
                 //console.log("select", columnName, model);
                 if(model){
@@ -178,8 +177,6 @@ angular.module($snaphy.getModuleName())
                     //Now redraw the table..
                     $scope.refreshData();
                 }
-
-
             }else if(/^related.+/.test(filterType)){
                 if(model){
                     //First find the data....
@@ -1004,16 +1001,42 @@ angular.module($snaphy.getModuleName())
                     $(tablePanelId).addClass('block-opt-refresh');
                 }, 200);
             }
-            if ($.isEmptyObject($scope.schema )) {
-
+            if ($.isEmptyObject($scope.schema)) {
                 //First get the schema..
                 Resource.getSchema(databaseName, function(schema) {
                     //Populate the schema..
                     $scope.schema = schema;
                     //console.log(schema);
                     $scope.where = $scope.where || {};
+                    if(loadTable()){
+                        Resource.getPage(start, number, tableState, databaseName, schema, $scope.where).then(function(result) {
+                            $scope.displayed = result.data;
+                            tableState.pagination.numberOfPages = result.numberOfPages; //set the number of pages so the pagination can update
+                            $scope.pagesReturned = result.numberOfPages;
+                            $scope.totalResults = result.count;
+                            $scope.isLoading = false;
+                            dataFetched = true;
+                            if (tablePanelId) {
+                                $timeout(function() {
+                                    //Now hide remove the refresh widget..
+                                    $(tablePanelId).removeClass('block-opt-refresh');
+                                }, 200);
+                            }
+                        });
+                    }
 
-                    Resource.getPage(start, number, tableState, databaseName, schema, $scope.where).then(function(result) {
+                }, function(httpResp){
+                    console.error(httpResp);
+                    if (tablePanelId) {
+                        $timeout(function() {
+                            //Now hide remove the refresh widget..
+                            $(tablePanelId).removeClass('block-opt-refresh');
+                        }, 200);
+                    }
+                });
+            }else{
+                if(loadTable()){
+                    Resource.getPage(start, number, tableState, databaseName, $scope.schema, $scope.where).then(function(result) {
                         $scope.displayed = result.data;
                         tableState.pagination.numberOfPages = result.numberOfPages; //set the number of pages so the pagination can update
                         $scope.pagesReturned = result.numberOfPages;
@@ -1026,52 +1049,28 @@ angular.module($snaphy.getModuleName())
                                 $(tablePanelId).removeClass('block-opt-refresh');
                             }, 200);
                         }
-                    });
-                }, function(httpResp){
-                    console.error(httpResp);
-                    if (tablePanelId) {
-                        $timeout(function() {
-                            //Now hide remove the refresh widget..
-                            $(tablePanelId).removeClass('block-opt-refresh');
-                        }, 200);
-                    }
-                });
-            }else{
-                Resource.getPage(start, number, tableState, databaseName, $scope.schema, $scope.where).then(function(result) {
-                    $scope.displayed = result.data;
-                    tableState.pagination.numberOfPages = result.numberOfPages; //set the number of pages so the pagination can update
-                    $scope.pagesReturned = result.numberOfPages;
-                    $scope.totalResults = result.count;
-                    $scope.isLoading = false;
-                    dataFetched = true;
-                    if (tablePanelId) {
-                        $timeout(function() {
-                            //Now hide remove the refresh widget..
-                            $(tablePanelId).removeClass('block-opt-refresh');
-                        }, 200);
-                    }
-                },function(httpResp){
-                    console.error(httpResp);
-                    if (tablePanelId) {
-                        $timeout(function() {
-                            //Now hide remove the refresh widget..
-                            $(tablePanelId).removeClass('block-opt-refresh');
-                        }, 200);
-                    }
+                    }, function(httpResp){
+                        console.error(httpResp);
+                        if (tablePanelId) {
+                            $timeout(function() {
+                                //Now hide remove the refresh widget..
+                                $(tablePanelId).removeClass('block-opt-refresh');
+                            }, 200);
+                        }
 
-                    //console.error(respHeader);
-                    SnaphyTemplate.notify({
-                        message: "Error occured. Please click on the reset button to go back to normal.",
-                        type: 'danger',
-                        icon: 'fa fa-times',
-                        align: 'left'
+                        //console.error(respHeader);
+                        SnaphyTemplate.notify({
+                            message: "Error occured. Please click on the reset button to go back to normal.",
+                            type: 'danger',
+                            icon: 'fa fa-times',
+                            align: 'left'
+                        });
                     });
-                });
+                }
             }
         };
 
         $scope.getDatabase = getDatabase;
-
 
 
 
@@ -1082,6 +1081,53 @@ angular.module($snaphy.getModuleName())
             $scope.totalResults = 0;
 
         };
+
+
+        var loadTable = function () {
+            var loadTable = true;
+            if($scope.schema){
+                if($scope.schema.settings){
+                    if($scope.schema.settings.tables){
+                        if($scope.schema.settings.tables.autoLoad === false){
+                            loadTable = false;
+                        }
+                    }
+                }
+            }
+            return loadTable;
+        };
+
+
+        //Anonymous function to check the broadcase receiver..
+        (function () {
+            $rootScope.$on(onSchemaFetched, function (schema) {
+                console.log("Schema fetched");
+                if($scope.schema){
+                    if($scope.schema.settings){
+                        if($scope.schema.settings.tables){
+                            if($scope.schema.settings.tables.resetWhenBroadCast){
+                                console.log("settings panel");
+                                //Listen to broadcast receiver and reset table when broadcast heppens..
+                                $rootScope.$on($scope.schema.settings.tables.resetWhenBroadCast, function () {
+                                    console.log("Reset broadcast received..");
+                                    if($scope.schema){
+                                        if($scope.schema.settings){
+                                            if($scope.schema.settings.tables){
+                                                //Set autoload to be true..
+                                                $scope.schema.settings.tables.autoLoad = true;
+                                                $scope.refreshData();
+                                            }
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    }
+                }
+            });
+        })();
+
+
 
 
         $scope.refreshData = function(tableState, ctrl) {

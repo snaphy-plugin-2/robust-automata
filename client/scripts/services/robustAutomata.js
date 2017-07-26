@@ -4,7 +4,9 @@ angular.module($snaphy.getModuleName())
     //Define your services here..
     //
     //
-    .factory('Resource', ['$q', '$filter', '$timeout', 'Database', function($q, $filter, $timeout, Database) {
+    .factory('Resource', ['$q', '$filter', '$timeout', 'Database', '$rootScope', function($q, $filter, $timeout, Database, $rootScope) {
+
+        var ON_SCHEMA_FETCHED = $snaphy.loadSettings('robustAutomata', "onSchemaFetched");
 
         //---------------------------------------------STORE GLOBAL VARIABLE-------------------------------------------------------
         var schema = {};
@@ -41,6 +43,8 @@ angular.module($snaphy.getModuleName())
                     if (success) {
                         success(schema);
                     }
+                    $rootScope.$broadcast(ON_SCHEMA_FETCHED, schema);
+
                 }, function(httpResp) {
                     if (error) {
                         error(httpResp);

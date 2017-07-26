@@ -74,12 +74,11 @@
 </div>
 
 
-
 <div ng-if="checkIfParentState()"  class="content">
     <div  class="row">
         <!--Adding Filters-->
-        <!-- Don't load the filters until the data isn't loaded -->
-        <div snaphy-ra-load-filters class="col-lg-12 col-sm-12" ng-if="isFilterPresent() && isDataFetched()">
+        <!-- Don't load the filters until the data isn't loaded --> <!--If isDataFetched() then only fetch data.-->
+        <div snaphy-ra-load-filters class="col-lg-12 col-sm-12" ng-if="isFilterPresent()">
             <div class="block">
                 <div class="block-header">
                     <h3 class="block-title">Filters</h3>
@@ -128,22 +127,6 @@
                                 ng-if="filter.type==='$remoteUrl'"
                                 class="col-lg-6 col-sm-6">
                         </robust-filter-remote-url>
-
-<!-- TODO Array filter scheduled for later -->
-<!--
-    <filter-array-objects
-            options="{{filter.options}}"
-            model-settings="schema"
-            table-data="dataValues"
-            filter-options="filter"
-            table-id="automataTable"
-            column-name="{{columnName}}"
-            get="{{filter.get}}"
-            label="{{filter.label}}"
-            ng-if="filter.type==='$arrayOfObjects'"
-            search-prop="{{filter.searchProp}}"
-            class="col-lg-6 col-sm-6">
-    </filter-array-objects> -->
 
                         <robust-filter-radio
                                 options="{{filter.options}}"
