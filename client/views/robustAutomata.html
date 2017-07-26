@@ -118,11 +118,11 @@
                                 column-name="{{columnName}}"
                                 filter-options="filter"
                                 method="{{filter.method}}"
-                                default="{{filter.default}}"
-                                disabled="{{filter.disabled}}"
-                                url="{{filter.url}}"
-                                data="{{filter.data}}"
-                                field="{{filter.field}}"
+                                default="filter.default"
+                                disabled="filter.disabled"
+                                url="filter.url"
+                                options="filter.options"
+                                field="filter.field"
                                 broadcast="{{filter.broadcast}}"
                                 label="{{filter.label}}"
                                 ng-if="filter.type==='$remoteUrl'"
@@ -153,12 +153,12 @@
                                 ng-if="filter.type==='$radio'"
                                 class="col-lg-6 col-sm-6">
                         </robust-filter-radio>
-
                     </form>
-                    <form class="form-horizontal">
+                   
+                    <form  class="form-horizontal">
                         <div class="form-group">
                             <div class="col-md-12">
-                                <button ng-click="resetAll()" class="btn btn-minw btn-default pull-right" type="button">Reset</button>
+                                <button ng-if="schema.settings.filters.showReset !== false" ng-click="resetAll()" class="btn btn-minw btn-default pull-right" type="button">Reset</button>
                             </div>
                         </div>
                     </form>

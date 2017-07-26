@@ -228,7 +228,8 @@ angular.module($snaphy.getModuleName())
     /**
      *Directive for defining filters $select
      * */
-    .directive('robustFilterRemoteUrl', ['$http', '$timeout', function($http, $timeout) {
+    .directive('robustFilterRemoteUrl', ['$http', '$timeout', '$rootScope',
+        function($http, $timeout, $rootScope) {
         //TODO table header data initialization bugs.. this filter must not proceed before table header initialization..
         return {
             restrict: 'E',
@@ -237,63 +238,76 @@ angular.module($snaphy.getModuleName())
                 "columnName": "@columnName",
                 "label": "@label",
                 "filterOptions": "=filterOptions",
-                "method": "=method",
+                "method": "@method",
                 "default": "=?default",
                 "disabled": "=?disabled",
-                "url": "=?url",
-                "data": "=?data",
-                "field": "=?field",
-                "broadcast": "=?broadcast"
+                "url": "=url",
+                "options": "=?options",
+                "field": "=field",
+                "broadcast": "@?broadcast"
             },
             replace: true,
             template: '<div class="form-group">' +
             '<label class="col-md-4 control-label" for="example-select2">{{label}}</label>' +
             '<div class="col-md-8">' +
-            '<select class="js-select2 form-control" ng-model="data.value" style="width: 100%;" data-placeholder="Choose one..">' +
+            '<select class="js-select2 form-control"  ng-model="data[field.value]" style="width: 100%;" data-placeholder="Choose one..">' +
             '<option value="" >All</option>' +
-            '<option ng-repeat="option in data.options" value="{{option.name}}">{{option.name}}</option>' +
+            '<option ng-repeat="item in optionsList" value="{{item[field.value]}}">{{item[field.display]}}</option>' +
             '</select>' +
             '</div>' +
             '</div>',
             link: function(scope, iElement) {
-                scope.data = {};
+                scope.data = scope.default || {};
                 //initializing options..
-                scope.data.options = [];
-
+                scope.optionsList = [];
                 //Now applying date change event of the table..
                 $($(iElement).find('.js-select2')).change(function() {
-                    if (scope.data.value) {
+                    if (scope.data[scope.field.value]) {
                         $timeout(function() {
                             //scope.$parent.where = scope.$parent.where || {};
-                            scope.$parent.where[scope.columnName] = scope.data.value;
+                            scope.$parent.where[scope.columnName] = scope.data[scope.field.value];
                             //Now redraw the table...
                             scope.$parent.refreshData();
 
+                        });
+                    }else{
+                        $timeout(function() {
+                            //scope.$parent.where = scope.$parent.where || {};
+                            delete scope.$parent.where[scope.columnName];
+                            //Now redraw the table...
+                            scope.$parent.refreshData();
                         });
                     }
                 });
 
 
-                if (scope.staticOptions !== undefined) {
-                    if (scope.staticOptions.length) {
-                        $timeout(function() {
-                            scope.data.options = JSON.parse(scope.staticOptions);
-                        });
-                    }
-                }
-
                 //Now load options..
-                if (scope.getOptions) {
-                    $http({
-                        method: 'GET',
-                        url: scope.getOptions
-                    }).then(function successCallback(response) {
-                        //Select options downloaded successfully..
-                        scope.data.options = response;
+                if (scope.url) {
+                    if(scope.method === "post"){
+                        scope.options = scope.options || {};
+                    }
 
+                    $http({
+                        method: scope.method === "post" ? "POST" : "GET" ,
+                        url: scope.url,
+                        data: scope.method === "post" ? scope.options: null
+                    }).then(function(response) {
+                        //Select options downloaded successfully..
+                        console.log(response);
+                        if(response){
+                            scope.optionsList = response.data;
+                            if(scope.broadcast){
+                                //Now broadCast the data fetched event.
+                                $rootScope.$broadcast(scope.broadcast, {
+                                    schema: scope.modelSettings,
+                                    data: scope.optionsList,
+                                    filter: scope.filterOptions
+                                });
+                            }
+                        }
 
                         //TODO LOAD THE TABLE..
-                    }, function errorCallback(response) {
+                    }, function(response) {
                         // called asynchronously if an error occurs
                         // or server returns response with an error status.
                         console.error(response);
@@ -303,7 +317,7 @@ angular.module($snaphy.getModuleName())
 
                 //Now add a Reset method to the filter..
                 scope.$parent.addResetMethod(function() {
-                    scope.data.value = "";
+                    scope.data[scope.field.value] = "";
                     //Now reinitialize the
                     setTimeout(function() {
                         $($(iElement).find('select')).select2('val', 'All');
