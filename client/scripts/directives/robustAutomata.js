@@ -225,6 +225,97 @@ angular.module($snaphy.getModuleName())
 
 
 
+    /**
+     *Directive for defining filters $select
+     * */
+    .directive('robustFilterRemoteUrl', ['$http', '$timeout', function($http, $timeout) {
+        //TODO table header data initialization bugs.. this filter must not proceed before table header initialization..
+        return {
+            restrict: 'E',
+            scope: {
+                "modelSettings": "=modelSettings",
+                "columnName": "@columnName",
+                "label": "@label",
+                "filterOptions": "=filterOptions",
+                "method": "=method",
+                "default": "=?default",
+                "disabled": "=?disabled",
+                "url": "=?url",
+                "data": "=?data",
+                "field": "=?field",
+                "broadcast": "=?broadcast"
+            },
+            replace: true,
+            template: '<div class="form-group">' +
+            '<label class="col-md-4 control-label" for="example-select2">{{label}}</label>' +
+            '<div class="col-md-8">' +
+            '<select class="js-select2 form-control" ng-model="data.value" style="width: 100%;" data-placeholder="Choose one..">' +
+            '<option value="" >All</option>' +
+            '<option ng-repeat="option in data.options" value="{{option.name}}">{{option.name}}</option>' +
+            '</select>' +
+            '</div>' +
+            '</div>',
+            link: function(scope, iElement) {
+                scope.data = {};
+                //initializing options..
+                scope.data.options = [];
+
+                //Now applying date change event of the table..
+                $($(iElement).find('.js-select2')).change(function() {
+                    if (scope.data.value) {
+                        $timeout(function() {
+                            //scope.$parent.where = scope.$parent.where || {};
+                            scope.$parent.where[scope.columnName] = scope.data.value;
+                            //Now redraw the table...
+                            scope.$parent.refreshData();
+
+                        });
+                    }
+                });
+
+
+                if (scope.staticOptions !== undefined) {
+                    if (scope.staticOptions.length) {
+                        $timeout(function() {
+                            scope.data.options = JSON.parse(scope.staticOptions);
+                        });
+                    }
+                }
+
+                //Now load options..
+                if (scope.getOptions) {
+                    $http({
+                        method: 'GET',
+                        url: scope.getOptions
+                    }).then(function successCallback(response) {
+                        //Select options downloaded successfully..
+                        scope.data.options = response;
+
+
+                        //TODO LOAD THE TABLE..
+                    }, function errorCallback(response) {
+                        // called asynchronously if an error occurs
+                        // or server returns response with an error status.
+                        console.error(response);
+                    });
+                }
+
+
+                //Now add a Reset method to the filter..
+                scope.$parent.addResetMethod(function() {
+                    scope.data.value = "";
+                    //Now reinitialize the
+                    setTimeout(function() {
+                        $($(iElement).find('select')).select2('val', 'All');
+                    }, 0);
+                });
+
+            } //link function..
+        }; //return
+    }]) //filterDate directive
+
+
+
 
 /**
  *Directive for defining filters $multiSelect

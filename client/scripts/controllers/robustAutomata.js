@@ -3,8 +3,8 @@
 angular.module($snaphy.getModuleName())
 
 //Controller for robustAutomataControl ..
-.controller('robustAutomataControl', ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter', 
-    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter) {
+.controller('robustAutomataControl', ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q',
+    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q) {
         //Checking if default templating feature is enabled..
 
 
@@ -743,6 +743,27 @@ angular.module($snaphy.getModuleName())
 
 
 
+        /**
+         * Open custom url of form on save.
+         * @param schema
+         */
+        $scope.openCustomUrl = function (schema) {
+            if(schema.settings){
+                if(schema.settings.form){
+                    if(schema.settings.form.url){
+                        if(schema.settings.form.target === "_blank"){
+                            var url = $state.href(schema.settings.form.url, {});
+                            window.open(url, 'blank');
+                        }else{
+                            $state.go(schema.settings.form.url);
+                        }
+                    }
+                }
+            }
+        };
+
+
+
 
         /**
          * Model for storing the model structure..
@@ -753,105 +774,113 @@ angular.module($snaphy.getModuleName())
          * @param modelInstance refrencing to the id attribute of the  form.
          */
         $scope.saveForm = function(formStructure, formData, formModel, goBack, modelInstance) {
-            if(ImageUploadingTracker.isUploadInProgress()){
-                SnaphyTemplate.notify({
-                    message: "Wait!! Image uploading is in progress. Please wait till the image is uploaded.",
-                    type: 'danger',
-                    icon: 'fa fa-times',
-                    align: 'left'
-                });
-                return false;
-            }
-
-            if (!$scope.isValid(formData)) {
-                SnaphyTemplate.notify({
-                    message: "Error data is Invalid.",
-                    type: 'danger',
-                    icon: 'fa fa-times',
-                    align: 'left'
-                });
-
-                //If edit was going on revert back..
-                if (formModel.id) {
-                    $scope.rollBackChanges();
-                }
-            } else {
-                //Now save the model..
-                var baseDatabase = Database.loadDb(formStructure.model);
-
-                var schema = {
-                    "relation": $scope.schema.relations
-                };
-
-                var requestData = {
-                    data: formModel,
-                    schema: schema
-                };
-
-                //create a copy of the data..
-                var savedData = angular.copy(formModel);
-                var positionNewData;
-                var update;
-                if (formModel.id) {
-                    update = true;
-
-                } else {
-                    positionNewData = $scope.displayed.length;
-                    //First add to the table..
-                    $scope.displayed.push(savedData);
-                    update = false;
-                }
-
-
-                //Now save||update the database with baseDatabase method.
-                baseDatabase.save({}, requestData, function(baseModel) {
-                    if (!update) {
-                        //Now update the form with id.
-                        $scope.displayed[positionNewData].id = baseModel.data.id;
-                    }
+            return new $q(function (resolve, reject) {
+                if(ImageUploadingTracker.isUploadInProgress()){
                     SnaphyTemplate.notify({
-                        message: "Data successfully saved.",
-                        type: 'success',
-                        icon: 'fa fa-check',
-                        align: 'left'
-                    });
-                }, function(respHeader) {
-                    //console.log("Error saving data to server");
-                    //console.error(respHeader);
-                    var message = "Error saving data.";
-                    if(respHeader){
-                        if(respHeader.data){
-                            if(respHeader.data.error){
-                                if(respHeader.data.error.message){
-                                    message = respHeader.data.error.message;
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (update) {
-                        $scope.rollBackChanges();
-                    } else {
-                        //remove the form added data..
-                        if (positionNewData > -1) {
-                            $scope.displayed.splice(positionNewData, 1);
-                        }
-                    }
-
-                    //console.error(respHeader);
-                    SnaphyTemplate.notify({
-                        message: message,
+                        message: "Wait!! Image uploading is in progress. Please wait till the image is uploaded.",
                         type: 'danger',
                         icon: 'fa fa-times',
                         align: 'left'
                     });
-                });
+                    reject("Wait!! Image uploading is in progress. Please wait till the image is uploaded.");
+                    return false;
+                }
 
-                //Now reset the form..
-                resetSavedForm(formData);
-                closeModel(goBack, modelInstance);
+                if (!$scope.isValid(formData)) {
+                    SnaphyTemplate.notify({
+                        message: "Error data is Invalid.",
+                        type: 'danger',
+                        icon: 'fa fa-times',
+                        align: 'left'
+                    });
 
-            }
+                    //If edit was going on revert back..
+                    if (formModel.id) {
+                        $scope.rollBackChanges();
+                    }
+                    reject("Error data is Invalid.");
+                } else {
+                    //Now save the model..
+                    var baseDatabase = Database.loadDb(formStructure.model);
+
+                    var schema = {
+                        "relation": $scope.schema.relations
+                    };
+
+                    var requestData = {
+                        data: formModel,
+                        schema: schema
+                    };
+
+                    //create a copy of the data..
+                    var savedData = angular.copy(formModel);
+                    var positionNewData;
+                    var update;
+                    if (formModel.id) {
+                        update = true;
+
+                    } else {
+                        positionNewData = $scope.displayed.length;
+                        //First add to the table..
+                        $scope.displayed.push(savedData);
+                        update = false;
+                    }
+
+
+                    //Now save||update the database with baseDatabase method.
+                    baseDatabase.save({}, requestData, function(baseModel) {
+                        if (!update) {
+                            //Now update the form with id.
+                            $scope.displayed[positionNewData].id = baseModel.data.id;
+                        }
+                        resolve(baseModel);
+
+                        SnaphyTemplate.notify({
+                            message: "Data successfully saved.",
+                            type: 'success',
+                            icon: 'fa fa-check',
+                            align: 'left'
+                        });
+
+                    }, function(respHeader) {
+                        //console.log("Error saving data to server");
+                        //console.error(respHeader);
+                        var message = "Error saving data.";
+                        if(respHeader){
+                            if(respHeader.data){
+                                if(respHeader.data.error){
+                                    if(respHeader.data.error.message){
+                                        message = respHeader.data.error.message;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (update) {
+                            $scope.rollBackChanges();
+                        } else {
+                            //remove the form added data..
+                            if (positionNewData > -1) {
+                                $scope.displayed.splice(positionNewData, 1);
+                            }
+                        }
+
+                        //console.error(respHeader);
+                        SnaphyTemplate.notify({
+                            message: message,
+                            type: 'danger',
+                            icon: 'fa fa-times',
+                            align: 'left'
+                        });
+                        reject(message);
+                    });
+
+                    //Now reset the form..
+                    resetSavedForm(formData);
+                    closeModel(goBack, modelInstance);
+                }
+            });
+
         }; //saveForm
 
 
@@ -1040,6 +1069,10 @@ angular.module($snaphy.getModuleName())
                 });
             }
         };
+
+        $scope.getDatabase = getDatabase;
+
+
 
 
         //Clear the data showing in the table.

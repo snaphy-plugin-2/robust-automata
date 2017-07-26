@@ -43,7 +43,19 @@
             <a class="block block-bordered block-link-hover3" style="cursor:pointer" ng-click="resetSavedForm(schema.form)"   >
                 <table class="block-table text-center">
                     <tbody>
-                        <tr>
+                        <tr ng-if="schema.settings.form.preventDefault !== false"  >
+                            <td ng-click="openCustomUrl(schema)" style="width: 50%;">
+                                <div class="h1 font-w700"><span class="h2 text-muted">+</span></div>
+                                <div class="h5 text-muted text-uppercase push-5-t">Add {{schema.model | camelCaseToSpaces}}</div>
+                            </td>
+                            <td ng-click="openCustomUrl(schema)" class="bg-gray-lighter border-l" style="width: 50%;">
+                                <div class="push-30 push-30-t">
+                                    <i class="si si-note fa-3x text-black-op"></i>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr ng-if="!schema.settings.form.preventDefault">
                             <td data-toggle="modal" data-target="#addDataModal" style="width: 50%;">
                                 <div class="h1 font-w700"><span class="h2 text-muted">+</span></div>
                                 <div class="h5 text-muted text-uppercase push-5-t">Add {{schema.model | camelCaseToSpaces}}</div>
@@ -101,6 +113,21 @@
                                 ng-if="filter.type==='$multiSelect'"
                                 class="col-lg-6 col-sm-6">
                         </robust-filter-multi-select>
+                        <robust-filter-remote-url
+                                model-settings="schema"
+                                column-name="{{columnName}}"
+                                filter-options="filter"
+                                method="{{filter.method}}"
+                                default="{{filter.default}}"
+                                disabled="{{filter.disabled}}"
+                                url="{{filter.url}}"
+                                data="{{filter.data}}"
+                                field="{{filter.field}}"
+                                broadcast="{{filter.broadcast}}"
+                                label="{{filter.label}}"
+                                ng-if="filter.type==='$remoteUrl'"
+                                class="col-lg-6 col-sm-6">
+                        </robust-filter-remote-url>
 
 <!-- TODO Array filter scheduled for later -->
 <!--
