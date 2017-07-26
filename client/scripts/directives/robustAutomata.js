@@ -250,7 +250,7 @@ angular.module($snaphy.getModuleName())
             template: '<div class="form-group">' +
             '<label class="col-md-4 control-label" for="example-select2">{{label}}</label>' +
             '<div class="col-md-8">' +
-            '<select class="js-select2 form-control"  ng-model="data[field.value]" style="width: 100%;" data-placeholder="Choose one..">' +
+            '<select class="js-select2 form-control" ng-disabled="disabled" ng-model="data[field.value]" style="width: 100%;" data-placeholder="Choose one..">' +
             '<option value="" >All</option>' +
             '<option ng-repeat="item in optionsList" value="{{item[field.value]}}">{{item[field.display]}}</option>' +
             '</select>' +
@@ -260,8 +260,18 @@ angular.module($snaphy.getModuleName())
                 scope.data = scope.default || {};
                 //initializing options..
                 scope.optionsList = [];
-                //Now applying date change event of the table..
-                $($(iElement).find('.js-select2')).change(function() {
+
+                var setFilter = function (data) {
+                    if(data){
+                        if (data[scope.field.value]) {
+                            scope.$parent.where[scope.columnName] = data[scope.field.value];
+                        }else{
+                            delete scope.$parent.where[scope.columnName];
+                        }
+                    }
+                };
+
+                var loadTableWithFilter = function () {
                     if (scope.data[scope.field.value]) {
                         $timeout(function() {
                             //scope.$parent.where = scope.$parent.where || {};
@@ -278,7 +288,17 @@ angular.module($snaphy.getModuleName())
                             scope.$parent.refreshData();
                         });
                     }
+                };
+
+
+                //Now applying date change event of the table..
+                $($(iElement).find('.js-select2')).change(function() {
+                    loadTableWithFilter();
+
                 });
+
+
+
 
 
                 //Now load options..
@@ -293,15 +313,17 @@ angular.module($snaphy.getModuleName())
                         data: scope.method === "post" ? scope.options: null
                     }).then(function(response) {
                         //Select options downloaded successfully..
-                        console.log(response);
                         if(response){
                             scope.optionsList = response.data;
                             if(scope.broadcast){
                                 //Now broadCast the data fetched event.
                                 $rootScope.$broadcast(scope.broadcast, {
                                     schema: scope.modelSettings,
-                                    data: scope.optionsList,
-                                    filter: scope.filterOptions
+                                    options: scope.optionsList,
+                                    filter: scope.filterOptions,
+                                    data: scope.data,
+                                    loadTableWithFilter: loadTableWithFilter,
+                                    setFilter: setFilter
                                 });
                             }
                         }

@@ -280,9 +280,9 @@
                                     />
                                 </th>
                                 <!--<button ng-click="resetAll()" class="btn btn-minw btn-default pull-right" type="button">Reset</button>-->
-                                <th class="text-center" style="width: 10%;word-wrap:break-word;">
+                                <th  class="text-center" style="width: 10%;word-wrap:break-word;">
                                     <!-- Clear ui variables.. -->
-                                    <button ng-click="resetAll()" class="btn btn-minw btn-default pull-right" type="button">Clear</button>
+                                    <button ng-if="schema.settings.tables.showReset !== false" ng-click="resetAll()" class="btn btn-minw btn-default pull-right" type="button">Clear</button>
                                 </th>
                             </tr>
 
