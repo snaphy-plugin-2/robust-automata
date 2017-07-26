@@ -804,81 +804,121 @@ angular.module($snaphy.getModuleName())
                         "relation": $scope.schema.relations
                     };
 
-                    var requestData = {
-                        data: formModel,
-                        schema: schema
-                    };
-
-                    //create a copy of the data..
-                    var savedData = angular.copy(formModel);
-                    var positionNewData;
-                    var update;
-                    if (formModel.id) {
-                        update = true;
-
-                    } else {
-                        positionNewData = $scope.displayed.length;
-                        //First add to the table..
-                        $scope.displayed.push(savedData);
-                        update = false;
-                    }
-
-
-                    //Now save||update the database with baseDatabase method.
-                    baseDatabase.save({}, requestData, function(baseModel) {
-                        if (!update) {
-                            //Now update the form with id.
-                            $scope.displayed[positionNewData].id = baseModel.data.id;
-                        }
-                        resolve(baseModel);
-
-                        SnaphyTemplate.notify({
-                            message: "Data successfully saved.",
-                            type: 'success',
-                            icon: 'fa fa-check',
-                            align: 'left'
-                        });
-
-                    }, function(respHeader) {
-                        //console.log("Error saving data to server");
-                        //console.error(respHeader);
-                        var message = "Error saving data.";
-                        if(respHeader){
-                            if(respHeader.data){
-                                if(respHeader.data.error){
-                                    if(respHeader.data.error.message){
-                                        message = respHeader.data.error.message;
-                                    }
-                                }
-                            }
-                        }
-
-                        if (update) {
-                            $scope.rollBackChanges();
-                        } else {
-                            //remove the form added data..
-                            if (positionNewData > -1) {
-                                $scope.displayed.splice(positionNewData, 1);
-                            }
-                        }
-
-                        //console.error(respHeader);
-                        SnaphyTemplate.notify({
-                            message: message,
-                            type: 'danger',
-                            icon: 'fa fa-times',
-                            align: 'left'
-                        });
-                        reject(message);
+                    $scope.schema.settings            = $scope.schema.settings || {};
+                    $scope.schema.settings.form       = $scope.schema.settings.form || {};
+                    $scope.schema.settings.form.beforeSave = $scope.schema.settings.form.beforeSave || [];
+                    var promiseList = [];
+                    $scope.schema.settings.form.beforeSave.forEach(function (func) {
+                       promiseList.push(func(formModel));
                     });
 
-                    //Now reset the form..
-                    resetSavedForm(formData);
-                    closeModel(goBack, modelInstance);
+                    $q.all(promiseList)
+                        .then(function () {
+                            return saveModelFinally(formModel, schema, baseDatabase, formData, goBack, modelInstance);
+                        })
+                        .then(function (data) {
+                            resolve(data);
+                        })
+                        .catch(function (error) {
+                            console.error(error);
+                            reject("Error data is Invalid.");
+                        });
+
+
                 }
             });
 
         }; //saveForm
+
+
+        /***
+         * Save model finally..
+         * @param formModel
+         * @param schema
+         * @param baseDatabase
+         * @param formData
+         * @param goBack
+         * @param modelInstance
+         * @returns {*}
+         */
+        var saveModelFinally = function (formModel, schema, baseDatabase, formData, goBack, modelInstance) {
+            return $q(function (resolve, reject) {
+                var requestData = {
+                    data: formModel,
+                    schema: schema
+                };
+
+                //create a copy of the data..
+                var savedData = angular.copy(formModel);
+                var positionNewData;
+                var update;
+                if (formModel.id) {
+                    update = true;
+
+                } else {
+                    positionNewData = $scope.displayed.length;
+                    //First add to the table..
+                    $scope.displayed.push(savedData);
+                    update = false;
+                }
+
+
+
+                //Now save||update the database with baseDatabase method.
+                baseDatabase.save({}, requestData, function(baseModel) {
+                    if (!update) {
+                        //Now update the form with id.
+                        $scope.displayed[positionNewData].id = baseModel.data.id;
+                    }
+                    resolve(baseModel);
+
+                    SnaphyTemplate.notify({
+                        message: "Data successfully saved.",
+                        type: 'success',
+                        icon: 'fa fa-check',
+                        align: 'left'
+                    });
+
+                }, function(respHeader) {
+                    //console.log("Error saving data to server");
+                    //console.error(respHeader);
+                    var message = "Error saving data.";
+                    if(respHeader){
+                        if(respHeader.data){
+                            if(respHeader.data.error){
+                                if(respHeader.data.error.message){
+                                    message = respHeader.data.error.message;
+                                }
+                            }
+                        }
+                    }
+
+                    if (update) {
+                        $scope.rollBackChanges();
+                    } else {
+                        //remove the form added data..
+                        if (positionNewData > -1) {
+                            $scope.displayed.splice(positionNewData, 1);
+                        }
+                    }
+
+                    //console.error(respHeader);
+                    SnaphyTemplate.notify({
+                        message: message,
+                        type: 'danger',
+                        icon: 'fa fa-times',
+                        align: 'left'
+                    });
+                    reject(message);
+                });
+
+                //Now reset the form..
+                resetSavedForm(formData);
+                closeModel(goBack, modelInstance);
+            });
+        };
+
+
 
 
         // Used in  the automata to get the table values..
@@ -1100,31 +1140,31 @@ angular.module($snaphy.getModuleName())
 
         //Anonymous function to check the broadcase receiver..
         (function () {
-            $rootScope.$on(onSchemaFetched, function (schema) {
-                console.log("Schema fetched");
-                if($scope.schema){
-                    if($scope.schema.settings){
-                        if($scope.schema.settings.tables){
-                            if($scope.schema.settings.tables.resetWhenBroadCast){
-                                console.log("settings panel");
-                                //Listen to broadcast receiver and reset table when broadcast heppens..
-                                $rootScope.$on($scope.schema.settings.tables.resetWhenBroadCast, function () {
-                                    console.log("Reset broadcast received..");
-                                    if($scope.schema){
-                                        if($scope.schema.settings){
-                                            if($scope.schema.settings.tables){
-                                                //Set autoload to be true..
-                                                $scope.schema.settings.tables.autoLoad = true;
-                                                $scope.refreshData();
+            if(onSchemaFetched){
+                $rootScope.$on(onSchemaFetched, function (schema) {
+                    if($scope.schema){
+                        if($scope.schema.settings){
+                            if($scope.schema.settings.tables){
+                                if($scope.schema.settings.tables.resetWhenBroadCast){
+                                    //Listen to broadcast receiver and reset table when broadcast heppens..
+                                    $rootScope.$on($scope.schema.settings.tables.resetWhenBroadCast, function () {
+                                        //console.log("Reset broadcast received..");
+                                        if($scope.schema){
+                                            if($scope.schema.settings){
+                                                if($scope.schema.settings.tables){
+                                                    //Set autoload to be true..
+                                                    $scope.schema.settings.tables.autoLoad = true;
+                                                    $scope.refreshData();
+                                                }
                                             }
                                         }
-                                    }
-                                })
+                                    })
+                                }
                             }
                         }
                     }
-                }
-            });
+                });
+            }
         })();
 
 
