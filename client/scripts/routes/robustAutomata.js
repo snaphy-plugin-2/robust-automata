@@ -1,11 +1,16 @@
 (function(){"use strict";})();
 /*global  $snaphy, angular, console */
+
+var databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
+var employeeRole = $snaphy.loadSettings('login', "employeeRole");
+var redirectOtherWise = $snaphy.loadSettings('login', 'onLoginRedirectState');
+var routePrefixName = $snaphy.loadSettings('robustAutomata', "routePrefixName") || "";
+//Listen to login changes..
+var LOGIN_EVENT       = $snaphy.loadSettings('login', "login_event_name");
+
 angular.module($snaphy.getModuleName())
 
 .run(['Permission', '$q', '$rootScope', function (Permission, $q, $rootScope)  {
-
-    var databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
-
     Permission.defineRole('parentState', function () {
         //using promise..
         var deferred = $q.defer();
@@ -31,63 +36,59 @@ angular.module($snaphy.getModuleName())
 
 
 //Create state to generate at runTime..
-.run(['runtimeStates', "RunTimeDatabase", function(runtimeStates, RunTimeDatabase) {
-    var employeeRole = $snaphy.loadSettings('login', "employeeRole");
-    var redirectOtherWise = $snaphy.loadSettings('login', 'onLoginRedirectState');
-    //var databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
-    var routePrefixName = $snaphy.loadSettings('robustAutomata', "routePrefixName") || "";
-
+.run(['runtimeStates', "RunTimeDatabase", "$rootScope", function(runtimeStates, RunTimeDatabase, $rootScope) {
     routePrefixName = formatRoutePrefix(routePrefixName);
-
     RunTimeDatabase.load()
         .then(function (list) {
-            if(list){
-                //Loading states at run time.
-                list.forEach(function(stateName) {
-                    //Add states at run time..
-                    runtimeStates.addState(stateName,  {
-                        url: '/' + routePrefixName  + stateName.toLowerCase().trim(),
-                        templateUrl: '/robustAutomata/views/robustAutomata.html',
-                        controller: 'robustAutomataControl',
-
-                        //Only allow authenticated users here
-                        data: {
-                            permissions: {
-                                only: [employeeRole],
-                                redirectTo: redirectOtherWise
-                            }
-                        }
-                    });
-
-
-
-                    //Add another state for saving users..
-                    //Add states at run time..
-                    runtimeStates.addState(stateName + '.save', {
-                        url         : '/saveData',
-                        templateUrl : '/robustAutomata/views/saveData.html',
-                        controller  : 'robustAutomataControl',
-                        parent      : stateName,
-
-                        //Only allow authenticated users here
-                        data        : {
-                            permissions: {
-                                only: ['parentState'],
-                                redirectTo: stateName
-                            }
-                        }
-                    });
-
-
-                });
-            } //list
+            loadRouteDynamically(list, routePrefixName, runtimeStates);
         })
         .catch(function (error) {
             //Ignore..
         });
-
-
 }]);
+
+
+
+var loadRouteDynamically = function (list, routePrefixName, runtimeStates) {
+
+    if(list){
+        //Loading states at run time.
+        list.forEach(function(stateName) {
+            //Add states at run time..
+            runtimeStates.addState(stateName,  {
+                url: '/' + routePrefixName  + stateName.toLowerCase().trim(),
+                templateUrl: '/robustAutomata/views/robustAutomata.html',
+                controller: 'robustAutomataControl',
+                //Only allow authenticated users here
+                data: {
+                    permissions: {
+                        only: [employeeRole],
+                        redirectTo: redirectOtherWise
+                    }
+                }
+            });
+
+            //Add another state for saving users..
+            //Add states at run time..
+            runtimeStates.addState(stateName + '.save', {
+                url         : '/saveData',
+                templateUrl : '/robustAutomata/views/saveData.html',
+                controller  : 'robustAutomataControl',
+                parent      : stateName,
+
+                //Only allow authenticated users here
+                data        : {
+                    permissions: {
+                        only: ['parentState'],
+                        redirectTo: stateName
+                    }
+                }
+            });
+        });
+    } //list
+};
+
+
 
 
 var formatRoutePrefix = function(routePrefixName){

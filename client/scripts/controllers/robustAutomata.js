@@ -4,8 +4,8 @@ angular.module($snaphy.getModuleName())
 
 //Controller for robustAutomataControl ..
 .controller('robustAutomataControl',
-    ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q', '$rootScope', 'RunTimeDatabase',
-    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q, $rootScope, RunTimeDatabase) {
+    ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q', '$rootScope', 'RunTimeDatabase', 'LoginServices',
+    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q, $rootScope, RunTimeDatabase, LoginServices) {
         //Checking if default templeting feature is enabled..
 
 
@@ -515,12 +515,6 @@ angular.module($snaphy.getModuleName())
             if (form) {
                 form.$setPristine();
             }
-            //Also reset the validator..
-            //var validator = form.validate();
-            //console.log(form);
-            //console.log(form.resetForm());
-            //validator.resetForm();
-            //var validator = $(form).validate();
         };
 
 
@@ -998,17 +992,46 @@ angular.module($snaphy.getModuleName())
         
         //Initialize default names of the current state..
         var init = function() {
-            for (var i = 0; i < $scope.databasesList.length; i++) {
-                if (currentState.toLowerCase().trim() === $scope.databasesList[i].toLowerCase().trim()) {
-                    $scope.currentState = camelCaseToSpaces(currentState);
-                    $scope.tableTitle = $scope.currentState + ' ' + 'Data';
-                    
-                    $scope.title = $scope.currentState + ' Console';
-                    $scope.description = "Data management console.";
-                    break;
-                }
-            }
+            RunTimeDatabase.load()
+                .then(function (list) {
+                    for (var i = 0; i < list.length; i++) {
+                        if (currentState.toLowerCase().trim() === list[i].toLowerCase().trim()) {
+                            $scope.currentState = camelCaseToSpaces(currentState);
+                            $scope.tableTitle = $scope.currentState + ' ' + 'Data';
+
+                            $scope.title = $scope.currentState + ' Console';
+                            $scope.description = "Data management console.";
+                            break;
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    //Ignore..
+                });
         };
+
+
+        //Listen for login changes..
+        $rootScope.$on(LOGIN_EVENT, function (event, acl) {
+            LoginServices.addUserDetail.setRoles(null);
+            RunTimeDatabase.load()
+                .then(function (list) {
+                    for (var i = 0; i < list.length; i++) {
+                        if (currentState.toLowerCase().trim() === list[i].toLowerCase().trim()) {
+                            $scope.currentState = camelCaseToSpaces(currentState);
+                            $scope.tableTitle = $scope.currentState + ' ' + 'Data';
+
+                            $scope.title = $scope.currentState + ' Console';
+                            $scope.description = "Data management console.";
+                            break;
+                        }
+                    }
+                })
+                .catch(function (error) {
+                    //Ignore..
+                });
+
+        });
 
 
 

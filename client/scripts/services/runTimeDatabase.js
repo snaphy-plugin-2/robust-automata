@@ -14,7 +14,7 @@ angular.module($snaphy.getModuleName())
                 var list = [];
                 LoginServices.addUserDetail.get()
                     .then(function (user) {
-                        if(user){
+                        if(!user){
                             throw new Error("User not found");
                         }else{
                             return LoginServices.addUserDetail.getRoles();
