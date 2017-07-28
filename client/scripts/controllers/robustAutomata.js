@@ -3,8 +3,9 @@
 angular.module($snaphy.getModuleName())
 
 //Controller for robustAutomataControl ..
-.controller('robustAutomataControl', ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q', '$rootScope',
-    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q, $rootScope) {
+.controller('robustAutomataControl',
+    ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q', '$rootScope', 'RunTimeDatabase',
+    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q, $rootScope, RunTimeDatabase) {
         //Checking if default templeting feature is enabled..
 
 
@@ -27,7 +28,7 @@ angular.module($snaphy.getModuleName())
         $scope.currentState = currentState;
         var defaultTemplate = $snaphy.loadSettings('robustAutomata', "defaultTemplate");
         var onSchemaFetched = $snaphy.loadSettings('robustAutomata', "onSchemaFetched");
-        $scope.databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
+        //$scope.databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
         //Id for tablePanel
         var tablePanelId = $snaphy.loadSettings('robustAutomata', "tablePanelId");
         $snaphy.setDefaultTemplate(defaultTemplate);
@@ -67,8 +68,16 @@ angular.module($snaphy.getModuleName())
                     }
                 }
             }
-        }; 
+        };
 
+
+        RunTimeDatabase.load()
+            .then(function (list) {
+                $scope.databasesList = list;
+            })
+            .catch(function (error) {
+                //Ignore..
+            });
 
 
         $scope.toJsDate = function(str) {

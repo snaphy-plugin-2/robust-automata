@@ -244,20 +244,22 @@ angular.module($snaphy.getModuleName())
                 "url": "=url",
                 "options": "=?options",
                 "field": "=field",
-                "broadcast": "@?broadcast"
+                "broadcast": "@?broadcast",
+                "onDataChanged": "@?onDataChanged",
+                "data": "=?data"
             },
             replace: true,
             template: '<div class="form-group">' +
             '<label class="col-md-4 control-label" for="example-select2">{{label}}</label>' +
             '<div class="col-md-8">' +
-            '<select class="js-select2 form-control" ng-disabled="disabled" ng-model="data[field.value]" style="width: 100%;" data-placeholder="Choose one..">' +
+            '<select class="form-control" ng-change="onChange()" ng-disabled="disabled" ng-model="data[field.value]" style="width: 100%;" data-placeholder="Choose one..">' +
             '<option value="" >All</option>' +
             '<option ng-repeat="item in optionsList" value="{{item[field.value]}}">{{item[field.display]}}</option>' +
             '</select>' +
             '</div>' +
             '</div>',
             link: function(scope, iElement) {
-                scope.data = scope.default || {};
+                scope.data = scope.default[scope.field.value] || {};
                 //initializing options..
                 scope.optionsList = [];
 
@@ -266,16 +268,24 @@ angular.module($snaphy.getModuleName())
                         if (data[scope.field.value]) {
                             scope.$parent.where[scope.columnName] = data[scope.field.value];
                         }else{
-                            delete scope.$parent.where[scope.columnName];
+                            delete myfunzone2030
+                            myfunzone2030
+                            scope.$parent.where[scope.columnName];
                         }
                     }
                 };
 
                 var loadTableWithFilter = function () {
-                    if (scope.data[scope.field.value]) {
+                    if (scope.data) {
+                       // console.log(scope.data, scope.field.value, scope.data[scope.field.value]);
                         $timeout(function() {
                             //scope.$parent.where = scope.$parent.where || {};
-                            scope.$parent.where[scope.columnName] = scope.data[scope.field.value];
+                            if(scope.data[scope.field.value]){
+                                scope.$parent.where[scope.columnName] = scope.data[scope.field.value];
+                            }else{
+                                delete scope.$parent.where[scope.columnName];
+                            }
+
                             //Now redraw the table...
                             scope.$parent.refreshData();
 
@@ -283,19 +293,38 @@ angular.module($snaphy.getModuleName())
                     }else{
                         $timeout(function() {
                             //scope.$parent.where = scope.$parent.where || {};
-                            delete scope.$parent.where[scope.columnName];
+                            scope.$parent.where[scope.columnName] = null;
                             //Now redraw the table...
                             scope.$parent.refreshData();
                         });
                     }
                 };
 
+                scope.onChange = function () {
+                    if(scope.data){
+                        if(scope.optionsList){
+                            scope.optionsList.forEach(function (item) {
+                                if(scope.data[scope.field.value] === item.id){
+                                    scope.data = item;
+                                }
+                            });
+                        }
+                    }
+                    if(scope.onDataChanged){
+                        //First onDataChanged filter
+                        $rootScope.$broadcast(scope.onDataChanged, {
+                            schema: scope.modelSettings,
+                            options: scope.optionsList,
+                            filter: scope.filterOptions,
+                            data: scope.data,
+                            loadTableWithFilter: loadTableWithFilter,
+                            setFilter: setFilter
+                        });
+                    }
 
-                //Now applying date change event of the table..
-                $($(iElement).find('.js-select2')).change(function() {
                     loadTableWithFilter();
+                };
 
-                });
 
 
 
@@ -339,11 +368,8 @@ angular.module($snaphy.getModuleName())
 
                 //Now add a Reset method to the filter..
                 scope.$parent.addResetMethod(function() {
+                    scope.data[scope.field.display] = "All";
                     scope.data[scope.field.value] = "";
-                    //Now reinitialize the
-                    setTimeout(function() {
-                        $($(iElement).find('select')).select2('val', 'All');
-                    }, 0);
                 });
 
             } //link function..
@@ -559,7 +585,7 @@ angular.module($snaphy.getModuleName())
 //
 //
 //
-.directive('robustWidgetAdded', ['Database', '$timeout', function(Database, $timeout) {
+.directive('robustWidgetAdded', ['Database', '$timeout', "$rootScope", function(Database, $timeout, $rootScope) {
     return {
         restrict: 'E',
         replace: true,
@@ -579,7 +605,8 @@ angular.module($snaphy.getModuleName())
             'options': "=?options",
             'propObj': '=propObj',
             'modelValues': '=modelValues',
-            'fetchLocally': '=fetchLocally'
+            'fetchLocally': '=fetchLocally',
+            'schema': '=schema'
         },
         template: '<div>' +
             '<a class="block block-bordered block-link-hover3" style="cursor:pointer" >' +
@@ -655,8 +682,15 @@ angular.module($snaphy.getModuleName())
                     };
 
 
-                    var fetchDataFromServer = function() {
+
+                    var fetchDataFromServer = function(preWhere) {
                         var where = prepareWhereObj(scope.propObj);
+                        for(var key in preWhere){
+                            if(preWhere.hasOwnProperty(key)){
+                                where[key] = preWhere[key];
+                            }
+                        }
+
                         var modelService = Database.loadDb(scope.model);
                         var manyToManyRelationExists = false;
                         if(scope.options){
@@ -698,10 +732,30 @@ angular.module($snaphy.getModuleName())
 
                     //Now initialize the directive..
                     var init = function() {
+                        var loadWidgets = true;
+                        if(scope.schema){
+                            if(scope.schema.settings){
+                                if(scope.schema.settings.widgets){
+                                    if(scope.schema.settings.widgets.resetWhenBroadCast){
+                                        loadWidgets = false;
+                                    }
+                                }
+                            }
+                        }
+
+                        if(loadWidgets){
                             // watch for local data change..
                             scope.$watch('modelValues.length', function() {
                                 fetchDataFromServer();
                             });
+                        }else{
+                             $rootScope.$on(scope.schema.settings.widgets.resetWhenBroadCast, function (event, where) {
+                                 // watch for local data change..
+                                 scope.$watch('modelValues.length', function() {
+                                     fetchDataFromServer(where);
+                                 });
+                             })
+                        }
                     };
                     //Now finally return the init method.
                     return init;

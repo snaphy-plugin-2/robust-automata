@@ -26,7 +26,8 @@
 <!-- Page Content -->
 <div ng-if="checkIfParentState()" class="content">
     <!-- Simple Vertical Tiles -->
-    <div class="row" ng-if="isDataFetched()">
+    <!--EDIT: 26 July 2017 removed ng-if="isDataFetched()"-->
+    <div class="row" ng-if="schema.tables" >
 
         <robust-widget-added  ng-cloak class="col-sm-6 col-lg-3"
         ng-repeat="widget in schema.widgets"
@@ -35,6 +36,7 @@
         icon="{{widget.icon}}"
         prop-obj="widget.propObj"
         model-values="displayed"
+        schema="schema"
         fetch-locally="widget.fetchLocally">
         </robust-widget-added>
 
@@ -43,7 +45,7 @@
             <a class="block block-bordered block-link-hover3" style="cursor:pointer" ng-click="resetSavedForm(schema.form)"   >
                 <table class="block-table text-center">
                     <tbody>
-                        <tr ng-if="schema.settings.form.preventDefault !== false"  >
+                        <tr ng-if="schema.settings.form.preventDefault"  >
                             <td ng-click="openCustomUrl(schema)" style="width: 50%;">
                                 <div class="h1 font-w700"><span class="h2 text-muted">+</span></div>
                                 <div class="h5 text-muted text-uppercase push-5-t">Add {{schema.model | camelCaseToSpaces}}</div>
@@ -123,6 +125,7 @@
                                 options="filter.options"
                                 field="filter.field"
                                 broadcast="{{filter.broadcast}}"
+                                on-data-changed="{{filter.onDataChanged}}"
                                 label="{{filter.label}}"
                                 ng-if="filter.type==='$remoteUrl'"
                                 class="col-lg-6 col-sm-6">
