@@ -268,9 +268,7 @@ angular.module($snaphy.getModuleName())
                         if (data[scope.field.value]) {
                             scope.$parent.where[scope.columnName] = data[scope.field.value];
                         }else{
-                            delete myfunzone2030
-                            myfunzone2030
-                            scope.$parent.where[scope.columnName];
+                            delete scope.$parent.where[scope.columnName];
                         }
                     }
                 };
