@@ -583,7 +583,7 @@ angular.module($snaphy.getModuleName())
 //
 //
 //
-.directive('robustWidgetAdded', ['Database', '$timeout', "$rootScope", function(Database, $timeout, $rootScope) {
+.directive('robustWidgetAdded', ['Database', '$timeout', "$rootScope", "$q", "LoginServices", function(Database, $timeout, $rootScope, $q, LoginServices) {
     return {
         restrict: 'E',
         replace: true,
@@ -626,144 +626,207 @@ angular.module($snaphy.getModuleName())
             '</a>' +
             '</div>',
         link: function(scope, iElement, iAttrs) {
-                /**
-                 * Format of the propObj should be
-                 * {
-                 * 		type: '$today'|| '$week' || '$allTime',
-                 * 		where:{
-                 * 			'email': 'robinskumar73'
-                 * 		},
-                 * 		dateProp: 'date'
-                 * }
-                 */
-                var loadWidgets = (function() {
-                    var prepareWhereObj = function(propObj) {
-                        var today, tomorrow, weekStartDate;
-                        //{"where": {and: [{"epoch_time": {"gte":1450717674}},{"epoch_time": {"lte":1459407675}}]} }
-                        today = moment().startOf('day');
-                        var tmrwString =  moment(moment().startOf('day')).add(1, 'days').toISOString();
-                        if (propObj.type.trim() === "$today") {
-                            tomorrow = moment(today).add(1, 'days');
-                            if (propObj.dateProp) {
-                                propObj.where.and = [];
-                                //between: [today, tomorrow]
-                                //console.log("today count ", [today.toISOString(), tomorrow.toISOString()]);
-                                var fromObj = {};
-                                fromObj[propObj.dateProp] = {"gte": moment().startOf('day').toISOString()};
-                                propObj.where.and.push(fromObj);
-                                var toObj = {};
-                                toObj[propObj.dateProp] = {"lte": tomorrow.toISOString()};
-                                propObj.where.and.push(toObj);
-                            } //if
-                            else {
-                                console.error("Error:  `dateProp` property name is needed in  the widget filter.");
-                            }
-                        } else if (propObj.type.trim() === "$week") {
-                            weekStartDate = today.subtract(7, 'days');
-                            if (propObj.dateProp) {
-                                propObj.where.and = [];
-                                var fromObj = {};
-                                fromObj[propObj.dateProp] = {"gte": weekStartDate.toISOString()};
-                                propObj.where.and.push(fromObj);
-                                var toObj = {};
-                                toObj[propObj.dateProp] = {"lte": tmrwString  };
-                                propObj.where.and.push(toObj);
-                            } //if
-                            else {
-                                console.error("Error:  `dateProp` property name is needed in  the widget filter.");
-                            }
-                        } //else if
+            /**
+             * Format of the propObj should be
+             * {
+             * 		type: '$today'|| '$week' || '$allTime',
+             * 		where:{
+             * 			'email': 'robinskumar73'
+             * 		},
+             * 		dateProp: 'date'
+             * }
+             */
+            var loadWidgets = (function() {
+                var prepareWhereObj = function(propObj) {
+                    var today, tomorrow, weekStartDate;
+                    //{"where": {and: [{"epoch_time": {"gte":1450717674}},{"epoch_time": {"lte":1459407675}}]} }
+                    today = moment().startOf('day');
+                    var tmrwString =  moment(moment().startOf('day')).add(1, 'days').toISOString();
+                    if (propObj.type.trim() === "$today") {
+                        tomorrow = moment(today).add(1, 'days');
+                        if (propObj.dateProp) {
+                            propObj.where.and = [];
+                            //between: [today, tomorrow]
+                            //console.log("today count ", [today.toISOString(), tomorrow.toISOString()]);
+                            var fromObj = {};
+                            fromObj[propObj.dateProp] = {"gte": moment().startOf('day').toISOString()};
+                            propObj.where.and.push(fromObj);
+                            var toObj = {};
+                            toObj[propObj.dateProp] = {"lte": tomorrow.toISOString()};
+                            propObj.where.and.push(toObj);
+                        } //if
                         else {
-                            //  Do nothing
+                            console.error("Error:  `dateProp` property name is needed in  the widget filter.");
                         }
-                        return propObj.where;
-                    };
-
-
-
-                    var fetchDataFromServer = function(preWhere) {
-                        var where = prepareWhereObj(scope.propObj);
-                        for(var key in preWhere){
-                            if(preWhere.hasOwnProperty(key)){
-                                where[key] = preWhere[key];
-                            }
+                    } else if (propObj.type.trim() === "$week") {
+                        weekStartDate = today.subtract(7, 'days');
+                        if (propObj.dateProp) {
+                            propObj.where.and = [];
+                            var fromObj = {};
+                            fromObj[propObj.dateProp] = {"gte": weekStartDate.toISOString()};
+                            propObj.where.and.push(fromObj);
+                            var toObj = {};
+                            toObj[propObj.dateProp] = {"lte": tmrwString  };
+                            propObj.where.and.push(toObj);
+                        } //if
+                        else {
+                            console.error("Error:  `dateProp` property name is needed in  the widget filter.");
                         }
+                    } //else if
+                    else {
+                        //  Do nothing
+                    }
+                    return propObj.where;
+                };
 
-                        var modelService = Database.loadDb(scope.model);
-                        var manyToManyRelationExists = false;
-                        if(scope.options){
-                            if(scope.options.relationType === "hasAndBelongToMany"){
-                                manyToManyRelationExists = true;
-                            }
-                        }
-                        if(manyToManyRelationExists){
-                            //Now fetch the data from the server..
-                            modelService[scope.options.relation].count({
-                                id: typeof scope.options.id === "function" ? scope.options.id(): scope.options.id ,
-                                where: where
-                            }, function(value, responseHeaders) {
-                                $timeout(function(){
-                                    //console.log(value);
-                                    //Now populate the value..
-                                    scope.value = value.count;
-                                });
-                            }, function(respHeader) {
-                                console.error("Error fetching widget data from the server.");
-                            }); //modelService
-                        }else{
-                            //Now fetch the data from the server..
-                            modelService.count({
-                                where: where
-                            }, function(value, responseHeaders) {
-                                $timeout(function(){
-                                    //console.log(value);
-                                    //Now populate the value..
-                                    scope.value = value.count;
-                                });
 
-                            }, function(respHeader) {
-                                console.error("Error fetching widget data from the server.");
-                            }); //modelService
-                        }
 
-                    };
-
-                    //Now initialize the directive..
-                    var init = function() {
-                        var loadWidgets = true;
-                        if(scope.schema){
-                            if(scope.schema.settings){
-                                if(scope.schema.settings.widgets){
-                                    if(scope.schema.settings.widgets.resetWhenBroadCast){
-                                        loadWidgets = false;
+                /**
+                 * Inject dynamic data in where query..
+                 */
+                var injectDynamicDataInWhere = function (where) {
+                    return $q(function (resolve, reject) {
+                        if(where){
+                            var pattern1 = /^\$user\..+$/;
+                            var promiseList = [];
+                            for(var key in where){
+                                if(where.hasOwnProperty(key)){
+                                    //test for dynamic data..
+                                    if(pattern1.test(where[key])){
+                                        (function (key, where) {
+                                            promiseList.push(
+                                                    $q(function (resolve, reject) {
+                                                        LoginServices.addUserDetail.get()
+                                                            .then(function (user) {
+                                                                if(user){
+                                                                    var patt = where[key];
+                                                                    var relatedKey = patt.replace("$user.", '');
+                                                                    var value = user[relatedKey];
+                                                                    if(value){
+                                                                        where[key] = value;
+                                                                    }else{
+                                                                        //If key's value not present then remove the property.
+                                                                        delete where[key];
+                                                                    }
+                                                                    resolve(where);
+                                                                }else{
+                                                                    throw new Error("User not found");
+                                                                }
+                                                            })
+                                                            .catch(function (error) {
+                                                                reject(error);
+                                                            })
+                                                    })
+                                            ); //panel push
+                                        })(key, where);
                                     }
+                                }
+                            } //for loop
+
+                            $q.all(promiseList)
+                                .then(function (where) {
+                                    resolve(where);
+                                })
+                                .catch(function (error) {
+                                    reject(error);
+                                    console.error(error);
+                                })
+                        }
+                    });
+                };
+
+
+
+                var fetchDataFromServer = function(preWhere) {
+                    var where = prepareWhereObj(scope.propObj);
+                    injectDynamicDataInWhere(where)
+                        .then(function (where) {
+                            for(var key in preWhere){
+                                if(preWhere.hasOwnProperty(key)){
+                                    where[key] = preWhere[key];
+                                }
+                            }
+
+                            var modelService = Database.loadDb(scope.model);
+                            var manyToManyRelationExists = false;
+                            if(scope.options){
+                                if(scope.options.relationType === "hasAndBelongToMany"){
+                                    manyToManyRelationExists = true;
+                                }
+                            }
+                            if(manyToManyRelationExists){
+                                //Now fetch the data from the server..
+                                modelService[scope.options.relation].count({
+                                    id: typeof scope.options.id === "function" ? scope.options.id(): scope.options.id ,
+                                    where: where
+                                }, function(value, responseHeaders) {
+                                    $timeout(function(){
+                                        //console.log(value);
+                                        //Now populate the value..
+                                        scope.value = value.count;
+                                    });
+                                }, function(respHeader) {
+                                    console.error("Error fetching widget data from the server.");
+                                }); //modelService
+                            }else{
+                                //Now fetch the data from the server..
+                                modelService.count({
+                                    where: where
+                                }, function(value, responseHeaders) {
+                                    $timeout(function(){
+                                        //console.log(value);
+                                        //Now populate the value..
+                                        scope.value = value.count;
+                                    });
+
+                                }, function(respHeader) {
+                                    console.error("Error fetching widget data from the server.");
+                                }); //modelService
+                            }
+                        })
+                        .catch(function (error) {
+
+                        });
+
+
+                };
+
+                //Now initialize the directive..
+                var init = function() {
+                    var loadWidgets = true;
+                    if(scope.schema){
+                        if(scope.schema.settings){
+                            if(scope.schema.settings.widgets){
+                                if(scope.schema.settings.widgets.resetWhenBroadCast){
+                                    loadWidgets = false;
                                 }
                             }
                         }
+                    }
 
-                        if(loadWidgets){
-                            // watch for local data change..
-                            scope.$watch('modelValues.length', function() {
-                                fetchDataFromServer();
-                            });
-                        }else{
-                             $rootScope.$on(scope.schema.settings.widgets.resetWhenBroadCast, function (event, where) {
-                                 // watch for local data change..
-                                 scope.$watch('modelValues.length', function() {
-                                     fetchDataFromServer(where);
-                                 });
-                             })
-                        }
-                    };
-                    //Now finally return the init method.
-                    return init;
-                })();
+                    if(loadWidgets){
+                        // watch for local data change..
+                        scope.$watch('modelValues.length', function() {
+                            fetchDataFromServer();
+                        });
+                    }else{
+                         $rootScope.$on(scope.schema.settings.widgets.resetWhenBroadCast, function (event, where) {
+                             // watch for local data change..
+                             scope.$watch('modelValues.length', function() {
+                                 fetchDataFromServer(where);
+                             });
+                         })
+                    }
+                };
+                //Now finally return the init method.
+                return init;
+            })();
 
 
-                //Now finally load the widgets..
-                loadWidgets();
+            //Now finally load the widgets..
+            loadWidgets();
 
-            } //link..
+        } //link..
     }; //return ..
 }])
 

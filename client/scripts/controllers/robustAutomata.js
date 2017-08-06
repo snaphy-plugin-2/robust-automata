@@ -47,6 +47,8 @@ angular.module($snaphy.getModuleName())
             date : false,
             select2: false
         };
+        //Listen to login changes..
+        var LOGIN_EVENT       = $snaphy.loadSettings('login', "login_event_name");
         //--------------------------------------------------------------------------------------------------------------------------------------
 
         $scope.initializePlugin = function(pluginList){
@@ -477,20 +479,21 @@ angular.module($snaphy.getModuleName())
          * @returns {*}
          */
         $scope.getParams = function(params, rowObject) {
-            for (var key in params) {
-                if (params.hasOwnProperty(key)) {
+            var data = JSON.parse(JSON.stringify(params));
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
                     if(rowObject[key]){
-                        var searchKey =  params[key];
+                        var searchKey =  data[key];
                         if(searchKey){
                             if(rowObject[searchKey]){
-                                params[key] = rowObject[searchKey];
+                                data[key] = rowObject[searchKey];
                             }
                         }
 
                     }
                 }
             }
-            return params;
+            return data;
         };
 
 
@@ -1010,28 +1013,29 @@ angular.module($snaphy.getModuleName())
                 });
         };
 
+        if(LOGIN_EVENT){
+            //Listen for login changes..
+            $rootScope.$on(LOGIN_EVENT, function (event, acl) {
+                LoginServices.addUserDetail.setRoles(null);
+                RunTimeDatabase.load()
+                    .then(function (list) {
+                        for (var i = 0; i < list.length; i++) {
+                            if (currentState.toLowerCase().trim() === list[i].toLowerCase().trim()) {
+                                $scope.currentState = camelCaseToSpaces(currentState);
+                                $scope.tableTitle = $scope.currentState + ' ' + 'Data';
 
-        //Listen for login changes..
-        $rootScope.$on(LOGIN_EVENT, function (event, acl) {
-            LoginServices.addUserDetail.setRoles(null);
-            RunTimeDatabase.load()
-                .then(function (list) {
-                    for (var i = 0; i < list.length; i++) {
-                        if (currentState.toLowerCase().trim() === list[i].toLowerCase().trim()) {
-                            $scope.currentState = camelCaseToSpaces(currentState);
-                            $scope.tableTitle = $scope.currentState + ' ' + 'Data';
-
-                            $scope.title = $scope.currentState + ' Console';
-                            $scope.description = "Data management console.";
-                            break;
+                                $scope.title = $scope.currentState + ' Console';
+                                $scope.description = "Data management console.";
+                                break;
+                            }
                         }
-                    }
-                })
-                .catch(function (error) {
-                    //Ignore..
-                });
+                    })
+                    .catch(function (error) {
+                        //Ignore..
+                    });
 
-        });
+            });
+        }
 
 
 
@@ -1073,6 +1077,18 @@ angular.module($snaphy.getModuleName())
                     $(tablePanelId).addClass('block-opt-refresh');
                 }, 200);
             }
+
+            //TODO: make it dynamic from backend.
+            if(tableState){
+                //Add sort
+                if($.isEmptyObject(tableState.sort)){
+                    tableState.sort = {
+                        predicate: "added",
+                        reverse: true
+                    }
+                }
+            }
+
             if ($.isEmptyObject($scope.schema)) {
                 //First get the schema..
                 Resource.getSchema(databaseName, function(schema) {
@@ -1081,6 +1097,7 @@ angular.module($snaphy.getModuleName())
                     //console.log(schema);
                     $scope.where = $scope.where || {};
                     if(loadTable()){
+                        console.log(tableState);
                         Resource.getPage(start, number, tableState, databaseName, schema, $scope.where).then(function(result) {
                             $scope.displayed = result.data;
                             tableState.pagination.numberOfPages = result.numberOfPages; //set the number of pages so the pagination can update

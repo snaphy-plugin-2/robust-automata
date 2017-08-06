@@ -4,10 +4,11 @@ angular.module($snaphy.getModuleName())
     //Define your services here..
     //
     //
-    .factory('Resource', ['$q', '$filter', '$timeout', 'Database', '$rootScope', function($q, $filter, $timeout, Database, $rootScope) {
+    .factory('Resource', ['$q', '$filter', '$timeout', 'Database', '$rootScope', '$window',
+        function($q, $filter, $timeout, Database, $rootScope, $window) {
 
         var ON_SCHEMA_FETCHED = $snaphy.loadSettings('robustAutomata', "onSchemaFetched");
-
+        var STATIC_DATA = $window.STATIC_DATA;
         //---------------------------------------------STORE GLOBAL VARIABLE-------------------------------------------------------
         var schema = {};
 
@@ -35,8 +36,15 @@ angular.module($snaphy.getModuleName())
          * @return {[type]}              [description]
          */
         var getSchema = function(databaseName, success, error) {
-            var dbService = Database.loadDb(databaseName);
-            //if ($.isEmptyObject(schema)) {
+            const schemaList = STATIC_DATA["schema"];
+            if(schemaList[databaseName]){
+                if (success) {
+                    success(schemaList[databaseName]);
+                }
+                $rootScope.$broadcast(ON_SCHEMA_FETCHED, schemaList[databaseName]);
+            }else{
+                var dbService = Database.loadDb(databaseName);
+                //if ($.isEmptyObject(schema)) {
                 dbService.getAbsoluteSchema({}, {}, function(values) {
                     schema = {};
                     extend(schema, values.schema);
@@ -50,9 +58,11 @@ angular.module($snaphy.getModuleName())
                         error(httpResp);
                     }
                 });
-            //} else {
-            //    success(schema);
-            //}
+                //} else {
+                //    success(schema);
+                //}
+            }
+
         };
 
 
