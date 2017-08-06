@@ -260,6 +260,10 @@ angular.module($snaphy.getModuleName())
             '</div>',
             link: function(scope, iElement) {
                 scope.data = scope.default[scope.field.value] || {};
+                if(!scope.data[scope.field.value]){
+                    scope.data[scope.field.value] = "";
+                }
+
                 //initializing options..
                 scope.optionsList = [];
 
@@ -301,20 +305,21 @@ angular.module($snaphy.getModuleName())
                 scope.onChange = function () {
                     if(scope.data){
                         if(scope.optionsList){
+                            var targetItem;
                             scope.optionsList.forEach(function (item) {
                                 if(scope.data[scope.field.value] === item.id){
-                                    scope.data = item;
+                                    targetItem = item;
                                 }
                             });
                         }
                     }
-                    if(scope.onDataChanged){
+                    if(scope.onDataChanged && targetItem){
                         //First onDataChanged filter
                         $rootScope.$broadcast(scope.onDataChanged, {
                             schema: scope.modelSettings,
                             options: scope.optionsList,
                             filter: scope.filterOptions,
-                            data: scope.data,
+                            data: targetItem,
                             loadTableWithFilter: loadTableWithFilter,
                             setFilter: setFilter
                         });
@@ -724,7 +729,7 @@ angular.module($snaphy.getModuleName())
                             } //for loop
 
                             $q.all(promiseList)
-                                .then(function (where) {
+                                .then(function () {
                                     resolve(where);
                                 })
                                 .catch(function (error) {
@@ -741,12 +746,12 @@ angular.module($snaphy.getModuleName())
                     var where = prepareWhereObj(scope.propObj);
                     injectDynamicDataInWhere(where)
                         .then(function (where) {
+
                             for(var key in preWhere){
                                 if(preWhere.hasOwnProperty(key)){
                                     where[key] = preWhere[key];
                                 }
                             }
-
                             var modelService = Database.loadDb(scope.model);
                             var manyToManyRelationExists = false;
                             if(scope.options){
