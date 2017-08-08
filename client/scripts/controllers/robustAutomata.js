@@ -515,6 +515,50 @@ angular.module($snaphy.getModuleName())
             //reset the tracking bar..
             ImageUploadingTracker.resetTracker();
             $scope.saveFormData = {};
+            //Add static data if given in beforeLoad...
+            if($scope.schema){
+                if($scope.schema.settings){
+                    if($scope.schema.settings.form){
+                        if($scope.schema.settings.form.beforeLoad){
+                            var promiseList = [];
+                            for(var key in $scope.schema.settings.form.beforeLoad){
+                                if($scope.schema.settings.form.beforeLoad.hasOwnProperty(key)){
+                                    var value = $scope.schema.settings.form.beforeLoad[key];
+                                    (function (key, value, saveFormData) {
+                                        promiseList.push($q(function (resolve, reject) {
+                                            var pattern = /\$user\./;
+                                            if(pattern.test(value)){
+                                                value = value.replace(pattern, "");
+                                            }
+                                            LoginServices.addUserDetail.get()
+                                                .then(function (user) {
+                                                    if(user[value]){
+                                                        value = user[value];
+                                                    }
+                                                    saveFormData[key] = value;
+                                                    resolve();
+                                                })
+                                                .catch(function (error) {
+                                                    reject(error);
+                                                });
+
+                                        }));
+                                    })(key, value, $scope.saveFormData);
+                                }
+                            }
+                            
+                            $q.all(promiseList)
+                                .then(function (data) {
+                                   //Do nothing here..
+                                })
+                                .catch(function (error) {
+                                    console.error(error);
+                                });
+                        }
+                    }
+                }
+            }
+
             if (form) {
                 form.$setPristine();
             }
