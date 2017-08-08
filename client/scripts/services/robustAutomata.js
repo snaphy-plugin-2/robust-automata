@@ -258,10 +258,7 @@ angular.module($snaphy.getModuleName())
                                         }
                                     }
                                 }
-
-
                             }
-
                         }
                     }
                 }
@@ -272,16 +269,8 @@ angular.module($snaphy.getModuleName())
             filter.where = where;
             object.filter = filter;
 
-            //console.log(object);
-
-
-            //predicateObject
-
             dbService.find(object, function(values, respHeader) {
                 dbService.count(filter, function(count, respHeader) {
-                     //console.log(count);
-                    // //Value retrived..
-                    // console.log(values);
                     //prepare another collection for the given element..
                     var dataValues = [];
                     //fetch hasManyThrough for the data..
@@ -312,7 +301,6 @@ angular.module($snaphy.getModuleName())
                             //setting the value of the data successfully fetched..
                             dataValues.push(element);
                         }
-
                     });
 
                     //Now resolve the promise..

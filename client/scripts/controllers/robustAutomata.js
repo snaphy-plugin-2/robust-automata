@@ -1039,14 +1039,72 @@ angular.module($snaphy.getModuleName())
 
 
 
-        var getDatabase = function(databaseName, tableState, ctrl){
+        /**
+         * Load Page on Table..
+         * @param start
+         * @param number
+         * @param tableState
+         * @param databaseName
+         */
+        var loadPage = function (start, number, tableState, databaseName) {
+            Resource.getPage(start, number, tableState, databaseName, $scope.schema, $scope.where).then(function(result) {
+                $scope.displayed = result.data;
+                tableState.pagination.numberOfPages = result.numberOfPages; //set the number of pages so the pagination can update
+                $scope.pagesReturned = result.numberOfPages;
+                $scope.totalResults = result.count;
+                $scope.isLoading = false;
+                dataFetched = true;
+                if (tablePanelId) {
+                    $timeout(function() {
+                        //Now hide remove the refresh widget..
+                        $(tablePanelId).removeClass('block-opt-refresh');
+                    }, 200);
+                }
+            }, function(httpResp){
+                console.error(httpResp);
+                if (tablePanelId) {
+                    $timeout(function() {
+                        //Now hide remove the refresh widget..
+                        $(tablePanelId).removeClass('block-opt-refresh');
+                    }, 200);
+                }
+
+                //console.error(respHeader);
+                SnaphyTemplate.notify({
+                    message: "Error occured. Please click on the reset button to go back to normal.",
+                    type: 'danger',
+                    icon: 'fa fa-times',
+                    align: 'left'
+                });
+            });
+        };
+
+        /**
+         * Load filter data.
+         * @param tableState
+         * @param ctrl
+         * @returns {{start: number, number: number}}
+         */
+        var loadFilter = function (tableState, ctrl) {
             if (!$scope.stCtrl && ctrl) {
                 $scope.stCtrl = ctrl;
             }
             if (!tableState && $scope.stCtrl) {
-                $scope.stCtrl.pipe();
-                return;
+                if($scope.stCtrl){
+                    if(!$scope.stCtrl.tableState()){
+                        $scope.stCtrl.pipe();
+                        return;
+                    }else{
+                        tableState = $scope.stCtrl.tableState();
+                    }
+                }else {
+                    $scope.stCtrl.pipe();
+                    return;
+                }
+
             }
+
+            //console.log($scope.stCtrl.tableState(), $scope.stCtrl);
 
             $scope.isLoading = true;
             var pagination = tableState.pagination;
@@ -1058,7 +1116,7 @@ angular.module($snaphy.getModuleName())
                 start = 0;
                 resetPage = false;
             }
-            
+
             if(filterReset){
                 tableState.pagination.start = 0;
                 start = 0;
@@ -1066,9 +1124,56 @@ angular.module($snaphy.getModuleName())
                 tableState.pagination.search = {};
                 //Also reset the search filters
                 tableState.search = {};
-                //Again reset back to false.. 
-                filterReset = false; 
+                //Again reset back to false..
+                filterReset = false;
             }
+
+
+            if($scope.schema){
+                if($scope.schema.settings){
+                    if($scope.schema.settings.tables){
+                        if($scope.schema.settings.tables.sort){
+                            if(tableState){
+                                //Add sort
+                                if($.isEmptyObject(tableState.sort)){
+                                    for(var key in $scope.schema.settings.tables.sort){
+                                        if($scope.schema.settings.tables.sort.hasOwnProperty(key)){
+                                            var sortType = $scope.schema.settings.tables.sort[key] === "DESC" ? true : false;
+                                            tableState.sort = {
+                                                predicate: key,
+                                                reverse: sortType
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //TODO: make it dynamic from backend.
+
+            return {start: start, number: number, tableState: tableState};
+        };
+
+
+
+        /**
+         * Get Database..
+         * @param databaseName
+         * @param tableState
+         * @param ctrl
+         * @param forceLoad
+         */
+        var getDatabase = function(databaseName, tableState, ctrl, forceLoad){
+            var pageInfo = loadFilter(tableState, ctrl);
+            if(!pageInfo){
+                return;
+            }
+            var start = pageInfo.start;
+            var number = pageInfo.number;
+            tableState = pageInfo.tableState;
 
             //Add the loading bar..
             if (tablePanelId) {
@@ -1077,43 +1182,15 @@ angular.module($snaphy.getModuleName())
                     $(tablePanelId).addClass('block-opt-refresh');
                 }, 200);
             }
-
-            //TODO: make it dynamic from backend.
-            if(tableState){
-                //Add sort
-                if($.isEmptyObject(tableState.sort)){
-                    tableState.sort = {
-                        predicate: "added",
-                        reverse: true
-                    }
-                }
-            }
-
             if ($.isEmptyObject($scope.schema)) {
                 //First get the schema..
-                Resource.getSchema(databaseName, function(schema) {
+                Resource.getSchema(databaseName, function(schema){
                     //Populate the schema..
                     $scope.schema = schema;
-                    //console.log(schema);
                     $scope.where = $scope.where || {};
-                    if(loadTable()){
-                        console.log(tableState);
-                        Resource.getPage(start, number, tableState, databaseName, schema, $scope.where).then(function(result) {
-                            $scope.displayed = result.data;
-                            tableState.pagination.numberOfPages = result.numberOfPages; //set the number of pages so the pagination can update
-                            $scope.pagesReturned = result.numberOfPages;
-                            $scope.totalResults = result.count;
-                            $scope.isLoading = false;
-                            dataFetched = true;
-                            if (tablePanelId) {
-                                $timeout(function() {
-                                    //Now hide remove the refresh widget..
-                                    $(tablePanelId).removeClass('block-opt-refresh');
-                                }, 200);
-                            }
-                        });
+                    if(isAutoLoadEnabled() || forceLoad){
+                        loadPage(start, number, tableState, databaseName);
                     }
-
                 }, function(httpResp){
                     console.error(httpResp);
                     if (tablePanelId) {
@@ -1124,40 +1201,13 @@ angular.module($snaphy.getModuleName())
                     }
                 });
             }else{
-                if(loadTable()){
-                    Resource.getPage(start, number, tableState, databaseName, $scope.schema, $scope.where).then(function(result) {
-                        $scope.displayed = result.data;
-                        tableState.pagination.numberOfPages = result.numberOfPages; //set the number of pages so the pagination can update
-                        $scope.pagesReturned = result.numberOfPages;
-                        $scope.totalResults = result.count;
-                        $scope.isLoading = false;
-                        dataFetched = true;
-                        if (tablePanelId) {
-                            $timeout(function() {
-                                //Now hide remove the refresh widget..
-                                $(tablePanelId).removeClass('block-opt-refresh');
-                            }, 200);
-                        }
-                    }, function(httpResp){
-                        console.error(httpResp);
-                        if (tablePanelId) {
-                            $timeout(function() {
-                                //Now hide remove the refresh widget..
-                                $(tablePanelId).removeClass('block-opt-refresh');
-                            }, 200);
-                        }
-
-                        //console.error(respHeader);
-                        SnaphyTemplate.notify({
-                            message: "Error occured. Please click on the reset button to go back to normal.",
-                            type: 'danger',
-                            icon: 'fa fa-times',
-                            align: 'left'
-                        });
-                    });
+                if(isAutoLoadEnabled() || forceLoad){
+                    loadPage(start, number, tableState, databaseName);
                 }
             }
         };
+
+
 
         $scope.getDatabase = getDatabase;
 
@@ -1172,7 +1222,7 @@ angular.module($snaphy.getModuleName())
         };
 
 
-        var loadTable = function () {
+        var isAutoLoadEnabled = function () {
             var loadTable = true;
             if($scope.schema){
                 if($scope.schema.settings){
@@ -1187,46 +1237,70 @@ angular.module($snaphy.getModuleName())
         };
 
 
-        //Anonymous function to check the broadcase receiver..
+        //Anonymous function to check the broadcast receiver..
         (function () {
             if(onSchemaFetched){
                 $rootScope.$on(onSchemaFetched, function (schema) {
                     if($scope.schema){
                         if($scope.schema.settings){
                             if($scope.schema.settings.tables){
-                                if($scope.schema.settings.tables.resetWhenBroadCast){
+                                $rootScope.$on($scope.schema.settings.tables.resetWhenBroadCast, function (schema) {
                                     //Listen to broadcast receiver and reset table when broadcast heppens..
-                                    $rootScope.$on($scope.schema.settings.tables.resetWhenBroadCast, function () {
-                                        //console.log("Reset broadcast received..");
-                                        if($scope.schema){
-                                            if($scope.schema.settings){
-                                                if($scope.schema.settings.tables){
-                                                    //Set autoload to be true..
-                                                    $scope.schema.settings.tables.autoLoad = true;
-                                                    $scope.refreshData();
-                                                }
-                                            }
-                                        }
-                                    })
-                                }
+                                    loadTable(null, null, true);
+                                });
+
+                                /*if($scope.schema.settings.tables.resetWhenBroadCast){
+
+                                }*/
                             }
                         }
                     }
                 });
             }
+
+
         })();
 
 
-
-
         $scope.refreshData = function(tableState, ctrl) {
+            if($scope.schema){
+                if($scope.schema.settings){
+                    if($scope.schema.settings.tables){
+                        if($scope.schema.settings.tables.beforeTableLoad){
+                            $scope.where = $scope.where || {};
+                            tableState = tableState || $scope.stCtrl.tableState();
+
+                            var options = {
+                                schema: $scope.schema,
+                                where: $scope.where,
+                                tableState: tableState
+                            };
+
+                            $rootScope.$broadcast($scope.schema.settings.tables.beforeTableLoad, options);
+                        }
+                    }
+                }
+            }
+
+            loadTable(tableState, ctrl, false);
+        };
+
+
+        /**
+         * Load table info.
+         * @param tableState {}
+         * @param ctrl {}
+         * @param forceLoad {Boolean} false default
+         */
+        var loadTable = function(tableState, ctrl, forceLoad){
             for (var i = 0; i < $scope.databasesList.length; i++) {
                 if (currentState.toLowerCase().trim() === $scope.databasesList[i].toLowerCase().trim()) {
-                    getDatabase($scope.databasesList[i], tableState, ctrl);
+                    getDatabase($scope.databasesList[i], tableState, ctrl , forceLoad);
                     break;
                 }
             }
         };
+
 
         $scope.resetTable = function(){
 

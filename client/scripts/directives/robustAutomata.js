@@ -279,7 +279,6 @@ angular.module($snaphy.getModuleName())
 
                 var loadTableWithFilter = function () {
                     if (scope.data) {
-                       // console.log(scope.data, scope.field.value, scope.data[scope.field.value]);
                         $timeout(function() {
                             //scope.$parent.where = scope.$parent.where || {};
                             if(scope.data[scope.field.value]){
@@ -303,9 +302,10 @@ angular.module($snaphy.getModuleName())
                 };
 
                 scope.onChange = function () {
+                    var targetItem;
                     if(scope.data){
                         if(scope.optionsList){
-                            var targetItem;
+
                             scope.optionsList.forEach(function (item) {
                                 if(scope.data[scope.field.value] === item.id){
                                     targetItem = item;
@@ -313,7 +313,7 @@ angular.module($snaphy.getModuleName())
                             });
                         }
                     }
-                    if(scope.onDataChanged && targetItem){
+                    if(scope.onDataChanged){
                         //First onDataChanged filter
                         $rootScope.$broadcast(scope.onDataChanged, {
                             schema: scope.modelSettings,
@@ -643,6 +643,8 @@ angular.module($snaphy.getModuleName())
              */
             var loadWidgets = (function() {
                 var prepareWhereObj = function(propObj) {
+                    propObj.where = propObj.where || {};
+                    var where = JSON.parse(JSON.stringify(propObj.where));
                     var today, tomorrow, weekStartDate;
                     //{"where": {and: [{"epoch_time": {"gte":1450717674}},{"epoch_time": {"lte":1459407675}}]} }
                     today = moment().startOf('day');
@@ -650,15 +652,15 @@ angular.module($snaphy.getModuleName())
                     if (propObj.type.trim() === "$today") {
                         tomorrow = moment(today).add(1, 'days');
                         if (propObj.dateProp) {
-                            propObj.where.and = [];
+                            where.and = [];
                             //between: [today, tomorrow]
                             //console.log("today count ", [today.toISOString(), tomorrow.toISOString()]);
                             var fromObj = {};
                             fromObj[propObj.dateProp] = {"gte": moment().startOf('day').toISOString()};
-                            propObj.where.and.push(fromObj);
+                            where.and.push(fromObj);
                             var toObj = {};
                             toObj[propObj.dateProp] = {"lte": tomorrow.toISOString()};
-                            propObj.where.and.push(toObj);
+                            where.and.push(toObj);
                         } //if
                         else {
                             console.error("Error:  `dateProp` property name is needed in  the widget filter.");
@@ -666,13 +668,13 @@ angular.module($snaphy.getModuleName())
                     } else if (propObj.type.trim() === "$week") {
                         weekStartDate = today.subtract(7, 'days');
                         if (propObj.dateProp) {
-                            propObj.where.and = [];
+                            where.and = [];
                             var fromObj = {};
                             fromObj[propObj.dateProp] = {"gte": weekStartDate.toISOString()};
-                            propObj.where.and.push(fromObj);
+                            where.and.push(fromObj);
                             var toObj = {};
                             toObj[propObj.dateProp] = {"lte": tmrwString  };
-                            propObj.where.and.push(toObj);
+                            where.and.push(toObj);
                         } //if
                         else {
                             console.error("Error:  `dateProp` property name is needed in  the widget filter.");
@@ -681,7 +683,7 @@ angular.module($snaphy.getModuleName())
                     else {
                         //  Do nothing
                     }
-                    return propObj.where;
+                    return where;
                 };
 
 
@@ -790,10 +792,8 @@ angular.module($snaphy.getModuleName())
                             }
                         })
                         .catch(function (error) {
-
+                            console.log(error);
                         });
-
-
                 };
 
                 //Now initialize the directive..
