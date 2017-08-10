@@ -170,17 +170,17 @@
                     <h3 class="block-title">{{tableTitle}}</h3>
                 </div>
                 <div st-pipe="refreshData"   st-table="displayed" class="block-content">
-                    <div  class="table-responsive" style="overflow-x: hidden;">
-                        <table id="automataTable" class="table table-bordered  table-striped js-dataTable-full">
+                    <div  class="table-responsive">
+                        <table id="automataTable" class="table table-bordered  table-striped table-vcenter js-dataTable-full">
                         <thead>
                             <tr style="cursor: pointer;">
-                                <th style="word-wrap:break-word;" 
+                                <th style="word-wrap:break-word;width:100px;"
                                     ng-if = "displayProperties(schema, header)"
                                     ng-repeat="header in schema.header"
                                     st-sort="{{header}}">
                                     {{getHeaderTitle(schema, header) | removeDot | underscoreless}}
                                 </th>
-                                <th class="text-center" style="width: 10%;word-wrap:break-word;">Actions</th>
+                                <th class="text-center" style="width:100px;word-wrap:break-word;">Actions</th>
                             </tr>
 
                              <tr>
