@@ -734,6 +734,8 @@ angular.module($snaphy.getModuleName())
             }
         };
 
+
+
         /**
          * Fetch the header title. Prefer the label if provided first.
          * @param schema
@@ -751,6 +753,26 @@ angular.module($snaphy.getModuleName())
                 }
             }
             return header;
+        };
+
+
+        /**
+         * Fetch the header style.
+         * @param schema
+         * @param header
+         * @return {{}} Title of header.
+         */
+        $scope.getHeaderStyle = function(schema, header){
+            //First convert the header to optimal type..
+            var new_header = header.replace(/\./, "_");
+            if (schema.tables) {
+                if (schema.tables[new_header]) {
+                    if (schema.tables[new_header].style) {
+                        return schema.tables[new_header].style;
+                    }
+                }
+            }
+            return {};
         };
 
 

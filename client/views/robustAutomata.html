@@ -177,6 +177,7 @@
                                 <th style="word-wrap:break-word;width:100px;"
                                     ng-if = "displayProperties(schema, header)"
                                     ng-repeat="header in schema.header"
+                                    ng-style="getHeaderStyle(schema, header)"
                                     st-sort="{{header}}">
                                     {{getHeaderTitle(schema, header) | removeDot | underscoreless}}
                                 </th>
