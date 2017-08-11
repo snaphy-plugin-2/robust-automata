@@ -49,6 +49,8 @@ angular.module($snaphy.getModuleName())
         };
         //Listen to login changes..
         var LOGIN_EVENT       = $snaphy.loadSettings('login', "login_event_name");
+        //Event Listeners..
+        var onResetEvent, onSchemaFetchedEvent, loginEvent;
         //--------------------------------------------------------------------------------------------------------------------------------------
 
         $scope.initializePlugin = function(pluginList){
@@ -1081,7 +1083,7 @@ angular.module($snaphy.getModuleName())
 
         if(LOGIN_EVENT){
             //Listen for login changes..
-            $rootScope.$on(LOGIN_EVENT, function (event, acl) {
+            loginEvent = $rootScope.$on(LOGIN_EVENT, function (event, acl) {
                 LoginServices.addUserDetail.setRoles(null);
                 RunTimeDatabase.load()
                     .then(function (list) {
@@ -1306,18 +1308,15 @@ angular.module($snaphy.getModuleName())
         //Anonymous function to check the broadcast receiver..
         (function () {
             if(onSchemaFetched){
-                $rootScope.$on(onSchemaFetched, function (schema) {
+
+                onSchemaFetchedEvent = $rootScope.$on(onSchemaFetched, function (schema) {
                     if($scope.schema){
                         if($scope.schema.settings){
                             if($scope.schema.settings.tables){
-                                $rootScope.$on($scope.schema.settings.tables.resetWhenBroadCast, function (schema) {
+                                onResetEvent = $rootScope.$on($scope.schema.settings.tables.resetWhenBroadCast, function (schema) {
                                     //Listen to broadcast receiver and reset table when broadcast heppens..
                                     loadTable(null, null, true);
                                 });
-
-                                /*if($scope.schema.settings.tables.resetWhenBroadCast){
-
-                                }*/
                             }
                         }
                     }
@@ -1374,6 +1373,22 @@ angular.module($snaphy.getModuleName())
             $scope.where = {};
             $scope.refreshData();
         };
+
+        ///Destroy event on page change..
+        $scope.$on('$destroy', function() {
+            if(onResetEvent){
+                onResetEvent();
+            }
+
+            if(loginEvent){
+                loginEvent();
+            }
+
+            if(onSchemaFetchedEvent){
+                onSchemaFetchedEvent();
+            }
+        });
+
 
         //http://stackoverflow.com/questions/1584370/how-to-merge-two-arrays-in-javascript-and-de-duplicate-items
         /**
