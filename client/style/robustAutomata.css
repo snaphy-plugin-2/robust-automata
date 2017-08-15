@@ -17,16 +17,7 @@
 }
 
 
-/*modify model content*/
-#addDataModal .modal-dialog {
-    width: 90% !important;
-    /*padding: 0;*/
-}
 
-.modal-content {
-    height: 100%;
-    border-radius: 0;
-}
 
 
 /*widgets*/
