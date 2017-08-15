@@ -167,14 +167,14 @@
                             <button  ng-click="resetAll()" type="button" data-toggle="block-option" data-action="refresh_toggle"  ><i class="si si-refresh"></i></button>
                         </li>
                     </ul>
-                    <h3 class="block-title">{{tableTitle}}</h3>
+                    <h3 class="block-title" style="font-size: 14px;">{{tableTitle}}</h3>
                 </div>
                 <div st-pipe="refreshData"   st-table="displayed">
                     <div  class="table-responsive">
                         <table id="automataTable" class="table table-bordered  table-striped table-vcenter js-dataTable-full">
                         <thead>
                             <tr style="cursor: pointer;">
-                                <th style="word-wrap:break-word;width:100px;"
+                                <th style="word-wrap:break-word;width:100px;padding: 5px 10px 5px;"
                                     ng-if = "displayProperties(schema, header)"
                                     ng-repeat="header in schema.header"
                                     ng-style="getHeaderStyle(schema, header)"
@@ -281,8 +281,9 @@
                                                colValue    = getColValue(rowObject, header);
                                                colKey      = getKey(rowObject, header);
                                                tableConfig = findModelPropertyTableConfig(schema.tables, header);"
+
                                     ng-repeat="header in schema.header"
-                                    style="width:100px;word-wrap:break-word;">
+                                    style="width:100px;word-wrap:break-word;padding: 5px 10px 5px;">
                                     <span data-sort="{{getColValue(rowObject, header)}}"  data-filter="{{getColValue(rowObject, header)}}" ng-if="colType === '[object String]' || colType === '[object Boolean]' || colType === '[object Number]'">
                                         <span ng-if="tableConfig.onClick !== undefined">
                                             <!--Display link here..-->
@@ -384,7 +385,7 @@
                                     </span>
                                 </td>
                                 <!-- For adding table edit and delete options. -->
-                                <td  class="text-center">
+                                <td  class="text-center" style="padding: 5px 10px 5px;">
                                     <div class="btn-group">
                                         <button
                                                 ng-if="schema.settings.edit !== false"
