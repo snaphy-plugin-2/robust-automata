@@ -15,3 +15,48 @@
 .pagination>li {
     cursor: pointer;
 }
+
+
+/*modify model content*/
+#addDataModal .modal-dialog {
+    width: 90% !important;
+    /*padding: 0;*/
+}
+
+.modal-content {
+    height: 100%;
+    border-radius: 0;
+}
+
+
+/*widgets*/
+.block-table td {
+    padding: 0 !important;
+    vertical-align: middle;
+}
+
+.form-group {
+    margin-bottom: 10px !important;
+}
+
+@media screen and (min-width: 768px){
+    .content {
+        padding: 10px 10px 1px !important;
+    }
+
+    .page-heading{
+        font-size: 20px !important;
+    }
+
+    .content p, .content .push, .content .block, .content .items-push>div {
+        margin-bottom: 5px !important;
+    }
+
+    .block-header {
+        padding: 10px 10px !important;
+    }
+
+    .block-content {
+        padding: 15px 15px 1px !important;
+    }
+}

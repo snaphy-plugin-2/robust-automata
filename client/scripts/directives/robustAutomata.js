@@ -612,18 +612,18 @@ angular.module($snaphy.getModuleName())
             'schema': '=schema'
         },
         template: '<div>' +
-            '<a class="block block-bordered block-link-hover3" style="cursor:pointer" >' +
+            '<a class="block block-bordered block-link-hover3" style="cursor:pointer;" >' +
             '<table class="block-table text-center">' +
             '<tbody>' +
             '<tr>' +
             '<td class="bg-gray-lighter border-r" style="width: 50%;">' +
             '<div class="push-30 push-30-t">' +
-            '<i ng-class="icon" class="fa-3x text-black-op si"></i>' +
+            '<i ng-class="icon" class="fa-2x text-black-op si"></i>' +
             '</div>' +
             '</td>' +
             '<td style="width: 50%;">' +
-            '<div class="h1 font-w700"><span class="h2 text-muted">+</span> {{value}}</div>' +
-            '<div class="h5 text-muted text-uppercase push-5-t">{{label}}</div>' +
+            '<div class="h2 font-w700"><span class="h2 text-muted">+</span> {{value}}</div>' +
+            '<div class="h6 text-muted text-uppercase push-5-t">{{label}}</div>' +
             '</td>' +
             '</tr>' +
             '</tbody>' +
