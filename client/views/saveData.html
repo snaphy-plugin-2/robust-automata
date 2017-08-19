@@ -8,8 +8,18 @@
 
             </div>
             <form name="schema.form" ng-validate="schema.validations" novalidate  class="form-horizontal">
-                <formly-form   model="saveFormData" fields="schema.fields">
-                </formly-form>
+                <form name="schema.form"  ng-validate="schema.validations" novalidate  class="form-horizontal">
+                    <!-- Danger Alert -->
+                    <div ng-show="schema.errorMessage.length" class="alert alert-danger alert-dismissable">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                        <h3 class="font-w300 push-15">Error</h3>
+                        <p>{{schema.errorMessage}}</p>
+                    </div>
+                    <!--Add container class and style related to this..-->
+                    <div ng-class="container.class" ng-style="container.style" ng-repeat="container in schema.container">
+                        <formly-form   model="saveFormData" fields="container.schema" ></formly-form>
+                    </div>
+                </form>
             </form>
         </div>
 
@@ -34,7 +44,7 @@
                             <i class="fa fa-save"></i>
                             Save
                     </button>
-                    <button
+                   <!-- <button
 
                         type="submit"
                         class="btn btn-sm bg-primary-dark"
@@ -42,7 +52,7 @@
                         ng-click="saveForm(schema, schema.form, saveFormData, false)" >
                         <i class="fa fa-save"></i>
                         Save and add another
-                    </button>
+                    </button>-->
                 </div>
             </div>
         </div>
