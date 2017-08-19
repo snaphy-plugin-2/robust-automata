@@ -517,6 +517,8 @@ angular.module($snaphy.getModuleName())
             //reset the tracking bar..
             ImageUploadingTracker.resetTracker();
             $scope.saveFormData = {};
+            //Error message will get stored here..
+            $scope.schema.errorMessage = "";
             //Add static data if given in beforeLoad...
             if($scope.schema){
                 if($scope.schema.settings){
@@ -905,6 +907,24 @@ angular.module($snaphy.getModuleName())
         }; //saveForm
 
 
+
+        var startLoadingBar = function (id) {
+            $timeout(function() {
+                //Now hide remove the refresh widget..
+                $(id).addClass('block-opt-refresh');
+            }, 200);
+        };
+
+
+        var stopLoadingBar = function (id) {
+            $timeout(function() {
+                //Now hide remove the refresh widget..
+                $(id).removeClass('block-opt-refresh');
+            }, 200);
+        };
+
+
+
         /***
          * Save model finally..
          * @param formModel
@@ -917,6 +937,7 @@ angular.module($snaphy.getModuleName())
          */
         var saveModelFinally = function (formModel, schema, baseDatabase, formData, goBack, modelInstance) {
             return $q(function (resolve, reject) {
+                $scope.isSavingInProcess = true;
                 var requestData = {
                     data: formModel,
                     schema: schema
@@ -936,7 +957,7 @@ angular.module($snaphy.getModuleName())
                     update = false;
                 }
 
-
+                startLoadingBar("#dataForm");
 
                 //Now save||update the database with baseDatabase method.
                 baseDatabase.save({}, requestData, function(baseModel) {
@@ -952,7 +973,10 @@ angular.module($snaphy.getModuleName())
                         icon: 'fa fa-check',
                         align: 'left'
                     });
-
+                    stopLoadingBar("#dataForm");
+                    $scope.isSavingInProcess = false;
+                    resetSavedForm(formData);
+                    closeModel(goBack, modelInstance);
                 }, function(respHeader) {
                     //console.log("Error saving data to server");
                     //console.error(respHeader);
@@ -983,12 +1007,11 @@ angular.module($snaphy.getModuleName())
                         icon: 'fa fa-times',
                         align: 'left'
                     });
+                    stopLoadingBar("#dataForm");
+                    $scope.schema.errorMessage = message;
                     reject(message);
+                    $scope.isSavingInProcess = false;
                 });
-
-                //Now reset the form..
-                resetSavedForm(formData);
-                closeModel(goBack, modelInstance);
             });
         };
 
