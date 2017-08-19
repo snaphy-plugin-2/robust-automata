@@ -451,7 +451,7 @@
                     <div class="row">
                         <div class="col-xs-3 text-left">
                             <button data-target="#addDataModal"  class="btn btn-sm btn-default "  type="button" data-dismiss="modal">Close</button>
-                            <button class="btn btn-sm btn-default"  type="button" ng-click="resetSavedForm(schema.form)">Reset data</button>
+                            <button class="btn btn-sm btn-default"  ng-if="!saveFormData.id" type="button" ng-click="resetSavedForm(schema.form)">Reset data</button>
                         </div>
                         <div class="col-xs-9">
                             <button
