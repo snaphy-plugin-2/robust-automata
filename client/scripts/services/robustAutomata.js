@@ -39,7 +39,8 @@ angular.module($snaphy.getModuleName())
             const schemaList = STATIC_DATA["schema"];
             if(schemaList[databaseName]){
                 if (success) {
-                    success(schemaList[databaseName]);
+                    var targetSchema = angular.copy(schemaList[databaseName]);
+                    success(targetSchema);
                 }
                 $rootScope.$broadcast(ON_SCHEMA_FETCHED, schemaList[databaseName]);
             }else{
