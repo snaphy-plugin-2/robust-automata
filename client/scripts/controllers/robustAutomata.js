@@ -559,6 +559,13 @@ angular.module($snaphy.getModuleName())
                                     console.error(error);
                                 });
                         }
+
+                        //If broadcast if present..
+                        if($scope.schema.settings.form.onLoad){
+                            $rootScope.$broadcast($scope.schema.settings.form.onLoad, {
+                                args: $scope.schema
+                            });
+                        }
                     }
                 }
             }
