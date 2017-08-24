@@ -514,6 +514,7 @@ angular.module($snaphy.getModuleName())
 
         var resetSavedForm = function(form) {
             //TODO POSSIBILITY FOR ERROR
+            console.log("Testing for bugs.");
             //reset the tracking bar..
             ImageUploadingTracker.resetTracker();
             $scope.saveFormData = {};
