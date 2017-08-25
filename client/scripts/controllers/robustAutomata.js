@@ -960,7 +960,7 @@ angular.module($snaphy.getModuleName())
                 } else {
                     positionNewData = $scope.displayed.length;
                     //First add to the table..
-                    $scope.displayed.push(savedData);
+                    //$scope.displayed.push(savedData);
                     update = false;
                 }
 
@@ -970,7 +970,9 @@ angular.module($snaphy.getModuleName())
                 baseDatabase.save({}, requestData, function(baseModel) {
                     if (!update) {
                         //Now update the form with id.
-                        $scope.displayed[positionNewData].id = baseModel.data.id;
+                        //$scope.displayed[positionNewData].id = baseModel.data.id;
+                        //Add data to server..
+                        $scope.displayed.push(baseModel.data);
                     }
                     resolve(baseModel);
 
