@@ -175,87 +175,88 @@ angular.module($snaphy.getModuleName())
 
         //{where: {or: [{title: 'My Post'}, {content: 'Hello'}]}}
         var getPage = function(start, number, params, database, schema,  whereFilter) {
-            //console.log("Printing whereFilter ", whereFilter);
-            var dbService = Database.loadDb(database);
-            var object = {};
-            var filter = {};
-            var where = {};
-            if(whereFilter){
-                //Now just add new where properties..
-                for(var key in whereFilter){
-                    if(whereFilter.hasOwnProperty(key)){
-                        where[key] = whereFilter[key];
+            return $q(function (resolve, reject) {
+                //console.log("Printing whereFilter ", whereFilter);
+                var dbService = Database.loadDb(database);
+                var object = {};
+                var filter = {};
+                var where = {};
+                if(whereFilter){
+                    //Now just add new where properties..
+                    for(var key in whereFilter){
+                        if(whereFilter.hasOwnProperty(key)){
+                            where[key] = whereFilter[key];
+                        }
                     }
                 }
-            }
 
 
-            //where.or = []
-            //Prepare filter..
-            var skip = start;
-            var limit = number;
-            var orderBy = [];
-            var deferred = $q.defer();
-            //track which related model has where filter ..
-            var relatedModelWhereFilter = [];
+                //where.or = []
+                //Prepare filter..
+                var skip = start;
+                var limit = number;
+                var orderBy = [];
+                //track which related model has where filter ..
+                var relatedModelWhereFilter = [];
 
-            //Add the necessary include in the filter..
-            getFilterObj(schema, dbService, filter);
+                //Add the necessary include in the filter..
+                getFilterObj(schema, dbService, filter);
 
-            //Now  prepare the sort and filter and orderBy function..
-            if (params.sort) {
-                if (params.sort.predicate) {
-                    var sort = params.sort.predicate;
-                    var reverse = params.sort.reverse;
-                    reverse = reverse ? "DESC" : "ASC";
-                    orderBy.push("" + sort + " " + reverse);
+                //Now  prepare the sort and filter and orderBy function..
+                if (params.sort) {
+                    if (params.sort.predicate) {
+                        var sort = params.sort.predicate;
+                        var reverse = params.sort.reverse;
+                        reverse = reverse ? "DESC" : "ASC";
+                        orderBy.push("" + sort + " " + reverse);
+                    }
                 }
-            }
 
-            filter.order = orderBy;
-            if (params.search) {
+                filter.order = orderBy;
+                if (params.search) {
 
-                if (params.search.predicateObject) {
-                    for (var property in params.search.predicateObject) {
-                        if (params.search.predicateObject.hasOwnProperty(property)) {
-                            if (typeof params.search.predicateObject[property] != 'object') {
-                                var like = params.search.predicateObject[property];
-                                //add to where property..
-                                //where: {title: {like: 'M.+st'}}}
-                                where[property] = {
-                                    "like": like
-                                };
-                                //where.or.push({property: {"like" : like} });
-                            }else{
-                                //add to realted data..
-                                //{ customer: {email: "robins"} }
-                                if(filter.include === undefined){
-                                    filter.include = [];
-                                }
-                                if(filter.include.length){
-                                    for(var i=0; i<filter.include.length; i++){
-                                        var includeProp = filter.include[i];
-                                        if(includeProp.relation === property){
-                                            //Add relation name for tracking..
-                                            relatedModelWhereFilter.push(property);
-                                            //Now insert the where...
-                                            var relationObj = params.search.predicateObject[property];
-                                            //var like = params.search.predicateObject[property];
-                                            for(var prop in relationObj){
-                                                if(relationObj.hasOwnProperty(prop)){
-                                                    var likeValue = relationObj[prop];
+                    if (params.search.predicateObject) {
+                        for (var property in params.search.predicateObject) {
+                            if (params.search.predicateObject.hasOwnProperty(property)) {
+                                if (typeof params.search.predicateObject[property] != 'object') {
+                                    var like = params.search.predicateObject[property];
+                                    //add to where property..
+                                    //where: {title: {like: 'M.+st'}}}
+                                    where[property] = {
+                                        "like": like
+                                    };
+                                    //where.or.push({property: {"like" : like} });
+                                }else{
+                                    //add to realted data..
+                                    //{ customer: {email: "robins"} }
+                                    if(filter.include === undefined){
+                                        filter.include = [];
+                                    }
+                                    if(filter.include.length){
+                                        for(var i=0; i<filter.include.length; i++){
+                                            var includeProp = filter.include[i];
+                                            if(includeProp.relation === property){
+                                                //Add relation name for tracking..
+                                                relatedModelWhereFilter.push(property);
+                                                //Now insert the where...
+                                                var relationObj = params.search.predicateObject[property];
+                                                //var like = params.search.predicateObject[property];
+                                                for(var prop in relationObj){
+                                                    if(relationObj.hasOwnProperty(prop)){
+                                                        var likeValue = relationObj[prop];
 
-                                                    includeProp.scope = includeProp.scope || {};
-                                                    includeProp.scope.where = includeProp.scope.where || {};
-                                                    // includeProp.scope.where[prop] = {
-                                                    //     "like": likeValue
-                                                    // };
-                                                    includeProp.scope.where[prop] = {
-                                                        "like": likeValue
-                                                    };
+                                                        includeProp.scope = includeProp.scope || {};
+                                                        includeProp.scope.where = includeProp.scope.where || {};
+                                                        // includeProp.scope.where[prop] = {
+                                                        //     "like": likeValue
+                                                        // };
+                                                        includeProp.scope.where[prop] = {
+                                                            "like": likeValue
+                                                        };
+                                                    }
                                                 }
+                                                break;
                                             }
-                                            break;
                                         }
                                     }
                                 }
@@ -263,65 +264,65 @@ angular.module($snaphy.getModuleName())
                         }
                     }
                 }
-            }
 
-            filter.skip = skip;
-            filter.limit = limit;
-            filter.where = where;
-            object.filter = filter;
+                filter.skip = skip;
+                filter.limit = limit;
+                filter.where = where;
+                object.filter = filter;
 
-            dbService.find(object, function(values, respHeader) {
-                dbService.count(filter, function(count, respHeader) {
-                    //prepare another collection for the given element..
-                    var dataValues = [];
-                    //fetch hasManyThrough for the data..
-                    values.forEach(function(element) {
-                        if (schema.relations) {
-                            if (!$.isEmptyObject(schema.relations.hasManyThrough)) {
-                                //TODO CHECK AND VERIFY IF hasManyThrough relation is actually working or not..
-                                //Now fetch the data of hasManyThrough from server..
-                                fetchHasManyThrough(element, schema.relations.hasManyThrough);
-                            }
-                        }
-
-                        if(relatedModelWhereFilter.length){
-                            var found = true;
-                            relatedModelWhereFilter.forEach(function(relationName){
-                                if(element[relationName] === undefined){
-                                    found = false;
+                dbService.find(object, function(values, respHeader) {
+                    dbService.count(filter, function(count, respHeader) {
+                        //prepare another collection for the given element..
+                        var dataValues = [];
+                        //fetch hasManyThrough for the data..
+                        values.forEach(function(element) {
+                            if (schema.relations) {
+                                if (!$.isEmptyObject(schema.relations.hasManyThrough)) {
+                                    //TODO CHECK AND VERIFY IF hasManyThrough relation is actually working or not..
+                                    //Now fetch the data of hasManyThrough from server..
+                                    fetchHasManyThrough(element, schema.relations.hasManyThrough);
                                 }
-                            }); //END loop
+                            }
 
-                            //TODO COUNT IN CASE OF RELATED MODE DATA FILTER NOT IMPLEMENTED..
+                            if(relatedModelWhereFilter.length){
+                                var found = true;
+                                relatedModelWhereFilter.forEach(function(relationName){
+                                    if(element[relationName] === undefined){
+                                        found = false;
+                                    }
+                                }); //END loop
 
-                            //Only add element if data is found..
-                            if(found){
+                                //TODO COUNT IN CASE OF RELATED MODE DATA FILTER NOT IMPLEMENTED..
+
+                                //Only add element if data is found..
+                                if(found){
+                                    dataValues.push(element);
+                                }
+                            }else{
+                                //setting the value of the data successfully fetched..
                                 dataValues.push(element);
                             }
-                        }else{
-                            //setting the value of the data successfully fetched..
-                            dataValues.push(element);
-                        }
+                        });
+
+                        //Now resolve the promise..
+                        resolve({
+                            data: dataValues,
+                            numberOfPages: Math.ceil(count.count / number),
+                            count: count.count
+                        });
+                    }, function(httpResponse) {
+                        reject( httpResponse );
+                        //Error counting values
+                        console.error(httpResponse);
                     });
 
-                    //Now resolve the promise..
-                    deferred.resolve({
-                        data: dataValues,
-                        numberOfPages: Math.ceil(count.count / number),
-                        count: count.count
-                    });
                 }, function(httpResponse) {
-                    deferred.reject( httpResponse );
-                    //Error counting values
+                    reject( httpResponse );
+                    //Error occured..in fetching data..
                     console.error(httpResponse);
                 });
-
-            }, function(httpResponse) {
-                deferred.reject( httpResponse );
-                //Error occured..in fetching data..
-                console.error(httpResponse);
             });
-            return deferred.promise;
+
         };
         
 

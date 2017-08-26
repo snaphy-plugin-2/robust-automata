@@ -264,6 +264,10 @@ angular.module($snaphy.getModuleName())
             }
 
         };
+        
+        
+        
+        
 
 
 
@@ -710,7 +714,7 @@ angular.module($snaphy.getModuleName())
 
         /**
          * Method  for checking if the automata form is valid.
-         * @param  {[type]} schema template schema object with property fields showing all the fields.
+         * @param  {[type]} form template schema object with property fields showing all the fields.
          * @return {[type]}        [description]
          */
         $scope.isValid = function(form) {
@@ -887,12 +891,41 @@ angular.module($snaphy.getModuleName())
                         "relation": $scope.schema.relations
                     };
 
-                    $scope.schema.settings            = $scope.schema.settings || {};
-                    $scope.schema.settings.form       = $scope.schema.settings.form || {};
+                    $scope.schema.settings                 = $scope.schema.settings || {};
+                    $scope.schema.settings.form            = $scope.schema.settings.form || {};
                     $scope.schema.settings.form.beforeSave = $scope.schema.settings.form.beforeSave || [];
                     var promiseList = [];
                     $scope.schema.settings.form.beforeSave.forEach(function (func) {
-                       promiseList.push(func(formModel));
+                        if(typeof func === "function"){
+                            promiseList.push(func(formModel));
+                        }else if(typeof func === "object"){
+                            promiseList.push($q(function (resolve, reject) {
+                                LoginServices.addUserDetail.get()
+                                    .then(function (user) {
+                                        for(var key in func){
+                                            if(func.hasOwnProperty(key)){
+                                                var value = func[key];
+                                                var pattern = /\$user\..+/;
+                                                if(pattern.test(value)){
+                                                    var keyValue = value.replace(/\$user\./, "");
+                                                    if(user[keyValue]){
+                                                        formModel[key] = user[keyValue];
+                                                    }
+                                                }else{
+                                                    formModel[key] = value;
+                                                }
+                                            }
+                                        }
+                                        resolve();
+                                    })
+                                    .catch(function (error) {
+                                        reject(error);
+                                    });
+                            }));
+
+                        }else{
+                            //Dont do anything..
+                        }
                     });
 
                     $q.all(promiseList)
@@ -1138,6 +1171,56 @@ angular.module($snaphy.getModuleName())
         }
 
 
+        /**
+         * Initialize the where query..
+         * @returns {*}
+         */
+        var initializeWhere = function () {
+            return $q(function (resolve, reject) {
+                $scope.where = $scope.where || {};
+                if(!jQuery.isEmptyObject($scope.schema)){
+                    if($scope.schema.settings){
+                        if($scope.schema.settings.tables){
+                            if($scope.schema.settings.tables.beforeLoad){
+                                LoginServices.addUserDetail.get()
+                                    .then(function (user) {
+                                        for(var key in $scope.schema.settings.tables.beforeLoad){
+                                            if($scope.schema.settings.tables.beforeLoad.hasOwnProperty(key)){
+                                                var value = $scope.schema.settings.tables.beforeLoad[key];
+                                                var patt = /\$user\..+/;
+                                                if(patt.test(value)){
+                                                    var valueKey = value.replace(/\$user\./, "");
+                                                    if(user[valueKey]){
+                                                        $scope.where[key] = user[valueKey];
+                                                    }
+                                                }else{
+                                                    $scope.where[key] = value;
+                                                }
+                                            }
+                                        }
+                                    })
+                                    .then(function () {
+                                        resolve($scope.where);
+                                    })
+                                    .catch(function (error) {
+                                        reject(error);
+                                    });
+                            }else{
+                                resolve($scope.where);
+                            }
+                        }else{
+                            resolve($scope.where);
+                        }
+                    }else{
+                        resolve($scope.where);
+                    }
+                }else{
+                    resolve($scope.where);
+                }
+            });
+        };
+
+
 
         /**
          * Load Page on Table..
@@ -1160,23 +1243,25 @@ angular.module($snaphy.getModuleName())
                         $(tablePanelId).removeClass('block-opt-refresh');
                     }, 200);
                 }
-            }, function(httpResp){
-                console.error(httpResp);
-                if (tablePanelId) {
-                    $timeout(function() {
-                        //Now hide remove the refresh widget..
-                        $(tablePanelId).removeClass('block-opt-refresh');
-                    }, 200);
-                }
+            })
+                .catch(function (httpResp) {
+                    console.error(httpResp);
+                    if (tablePanelId) {
+                        $timeout(function() {
+                            //Now hide remove the refresh widget..
+                            $(tablePanelId).removeClass('block-opt-refresh');
+                        }, 200);
+                    }
 
-                //console.error(respHeader);
-                SnaphyTemplate.notify({
-                    message: "Error occured. Please click on the reset button to go back to normal.",
-                    type: 'danger',
-                    icon: 'fa fa-times',
-                    align: 'left'
-                });
-            });
+                    //console.error(respHeader);
+                    SnaphyTemplate.notify({
+                        message: "Error occured. Please click on the reset button to go back to normal.",
+                        type: 'danger',
+                        icon: 'fa fa-times',
+                        align: 'left'
+                    });
+
+                })
         };
 
         /**
@@ -1242,7 +1327,7 @@ angular.module($snaphy.getModuleName())
                                             tableState.sort = {
                                                 predicate: key,
                                                 reverse: sortType
-                                            }
+                                            };
                                             break;
                                         }
                                     }
@@ -1287,10 +1372,18 @@ angular.module($snaphy.getModuleName())
                 Resource.getSchema(databaseName, function(schema){
                     //Populate the schema..
                     $scope.schema = schema;
-                    $scope.where = $scope.where || {};
-                    if(isAutoLoadEnabled() || forceLoad){
-                        loadPage(start, number, tableState, databaseName);
-                    }
+                    initializeWhere()
+                        .then(function (where) {
+                            $scope.where = where;
+                            if(isAutoLoadEnabled() || forceLoad){
+                                loadPage(start, number, tableState, databaseName);
+                            }
+                        })
+                        .catch(function (error) {
+                            console.error(error);
+                        });
+                    //$scope.where = $scope.where || {};
+
                 }, function(httpResp){
                     console.error(httpResp);
                     if (tablePanelId) {
@@ -1301,9 +1394,16 @@ angular.module($snaphy.getModuleName())
                     }
                 });
             }else{
-                if(isAutoLoadEnabled() || forceLoad){
-                    loadPage(start, number, tableState, databaseName);
-                }
+                initializeWhere()
+                    .then(function (where) {
+                        $scope.where = where;
+                        if(isAutoLoadEnabled() || forceLoad){
+                            loadPage(start, number, tableState, databaseName);
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error(error);
+                    });
             }
         };
 
@@ -1340,13 +1440,12 @@ angular.module($snaphy.getModuleName())
         //Anonymous function to check the broadcast receiver..
         (function () {
             if(onSchemaFetched){
-
                 onSchemaFetchedEvent = $rootScope.$on(onSchemaFetched, function (schema) {
                     if($scope.schema){
                         if($scope.schema.settings){
                             if($scope.schema.settings.tables){
                                 onResetEvent = $rootScope.$on($scope.schema.settings.tables.resetWhenBroadCast, function (schema) {
-                                    //Listen to broadcast receiver and reset table when broadcast heppens..
+                                    //Listen to broadcast receiver and reset table when broadcast happens..
                                     loadTable(null, null, true);
                                 });
                             }
@@ -1354,11 +1453,15 @@ angular.module($snaphy.getModuleName())
                     }
                 });
             }
-
-
         })();
 
 
+
+        /**
+         * Refresh The Data.
+         * @param tableState
+         * @param ctrl
+         */
         $scope.refreshData = function(tableState, ctrl) {
             if($scope.schema){
                 if($scope.schema.settings){
@@ -1366,7 +1469,6 @@ angular.module($snaphy.getModuleName())
                         if($scope.schema.settings.tables.beforeTableLoad){
                             $scope.where = $scope.where || {};
                             tableState = tableState || $scope.stCtrl.tableState();
-
                             var options = {
                                 schema: $scope.schema,
                                 where: $scope.where,
@@ -1399,8 +1501,8 @@ angular.module($snaphy.getModuleName())
         };
 
 
-        $scope.resetTable = function(){
 
+        $scope.resetTable = function(){
             //reset the table filters
             $scope.where = {};
             $scope.refreshData();

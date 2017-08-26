@@ -371,8 +371,10 @@ angular.module($snaphy.getModuleName())
 
                 //Now add a Reset method to the filter..
                 scope.$parent.addResetMethod(function() {
-                    scope.data[scope.field.display] = "All";
-                    scope.data[scope.field.value] = "";
+                    if(!scope.disabled){
+                        scope.data[scope.field.display] = "All";
+                        scope.data[scope.field.value] = "";
+                    }
                 });
 
             } //link function..
