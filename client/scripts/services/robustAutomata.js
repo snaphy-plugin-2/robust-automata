@@ -36,14 +36,29 @@ angular.module($snaphy.getModuleName())
          * @return {[type]}              [description]
          */
         var getSchema = function(databaseName, success, error) {
-            const schemaList = STATIC_DATA["schema"];
-            if(schemaList[databaseName]){
-                if (success) {
-                    var targetSchema = angular.copy(schemaList[databaseName]);
-                    success(targetSchema);
+            var isSchemaPresent = true;
+            if(STATIC_DATA){
+                var schemaList = STATIC_DATA["schema"];
+                if(schemaList){
+                    if(schemaList[databaseName]) {
+                        if (success) {
+                            var targetSchema = angular.copy(schemaList[databaseName]);
+                            success(targetSchema);
+                        }
+                        $rootScope.$broadcast(ON_SCHEMA_FETCHED, schemaList[databaseName]);
+                    }else {
+                        isSchemaPresent = false;
+                    }
+                }else{
+                    isSchemaPresent = false;
                 }
-                $rootScope.$broadcast(ON_SCHEMA_FETCHED, schemaList[databaseName]);
+
             }else{
+                isSchemaPresent = false;
+            }
+
+
+            if(!isSchemaPresent){
                 var dbService = Database.loadDb(databaseName);
                 //if ($.isEmptyObject(schema)) {
                 dbService.getAbsoluteSchema({}, {}, function(values) {
