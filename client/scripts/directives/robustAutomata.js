@@ -37,13 +37,15 @@ angular.module($snaphy.getModuleName())
             restrict: 'E',
             scope: {
                 "modelSettings": "=modelSettings",
+                "labelClass": "=labelClass",
+                "dateClass": "=dateClass",
                 "columnName": "@columnName",
                 "label": "@label"
             },
             replace: true,
             template: '<div class="form-group">' +
-                '<label class="col-md-4 control-label" for="example-daterange1">{{label}}</label>' +
-                '<div class="col-md-8">' +
+                '<label ng-class="labelClass" class="col-md-2 control-label" for="example-daterange1">{{label}}</label>' +
+                '<div ng-class="dateClass">' +
                 '<div class="input-daterange input-group" data-date-format="mm/dd/yyyy">' +
                 '<input class="form-control" type="text"  name="daterange1" placeholder="From">' +
                 '<span class="input-group-addon"><i class="fa fa-chevron-right"></i></span>' +
