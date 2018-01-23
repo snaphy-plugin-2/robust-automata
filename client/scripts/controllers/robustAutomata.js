@@ -1343,6 +1343,38 @@ angular.module($snaphy.getModuleName())
         };
 
 
+        /**
+         * Will fetch the schema for the given database name..
+         * @param {*} databaseName 
+         */
+        var getSchema = function(databaseName){
+            return $q(function(resolve, reject){
+                if ($.isEmptyObject($scope.schema)) {
+                    //First get the schema..
+                    Resource.getSchema(databaseName, function(schema){
+                        //Populate the schema..
+                        $scope.schema = schema;
+                        resolve(schema);
+                    }, function(httpResp){
+                        console.error(httpResp);
+                        if (tablePanelId) {
+                            $timeout(function() {
+                                //Now hide remove the refresh widget..
+                                $(tablePanelId).removeClass('block-opt-refresh');
+                            }, 200);
+                        }
+                        reject(httpResp);
+                    });
+                }else{
+                    resolve($scope.schema);
+                }
+            });
+        };
+
+
+
+
+
 
         /**
          * Get Database..
@@ -1352,14 +1384,7 @@ angular.module($snaphy.getModuleName())
          * @param forceLoad
          */
         var getDatabase = function(databaseName, tableState, ctrl, forceLoad){
-            var pageInfo = loadFilter(tableState, ctrl);
-            if(!pageInfo){
-                return;
-            }
-            var start = pageInfo.start;
-            var number = pageInfo.number;
-            tableState = pageInfo.tableState;
-
+            
             //Add the loading bar..
             if (tablePanelId) {
                 $timeout(function() {
@@ -1367,48 +1392,35 @@ angular.module($snaphy.getModuleName())
                     $(tablePanelId).addClass('block-opt-refresh');
                 }, 200);
             }
-            if ($.isEmptyObject($scope.schema)) {
-                //First get the schema..
-                Resource.getSchema(databaseName, function(schema){
-                    //Populate the schema..
-                    $scope.schema = schema;
-                    initializeWhere()
-                        .then(function (where) {
-                            $scope.where = where;
-                            if(isAutoLoadEnabled() || forceLoad){
-                                loadPage(start, number, tableState, databaseName);
-                            }
-                        })
-                        .catch(function (error) {
-                            console.error(error);
-                        });
-                    //$scope.where = $scope.where || {};
-
-                }, function(httpResp){
-                    console.error(httpResp);
-                    if (tablePanelId) {
-                        $timeout(function() {
-                            //Now hide remove the refresh widget..
-                            $(tablePanelId).removeClass('block-opt-refresh');
-                        }, 200);
-                    }
-                });
-            }else{
-                initializeWhere()
-                    .then(function (where) {
-                        $scope.where = where;
-                        if(isAutoLoadEnabled() || forceLoad){
-                            loadPage(start, number, tableState, databaseName);
-                        }
-                    })
-                    .catch(function (error) {
-                        console.error(error);
-                    });
-            }
+            var start, number;
+            //Fetch the schema for the database...
+            getSchema(databaseName)
+            .then(function(schema){
+                var pageInfo = loadFilter(tableState, ctrl);
+                if(!pageInfo){
+                    return;
+                }
+                
+                start = pageInfo.start;
+                number = pageInfo.number;
+                tableState = pageInfo.tableState;
+    
+                //Initialize where query..
+                return initializeWhere(); 
+            })
+            .then(function (where) {
+                $scope.where = where;
+                if(isAutoLoadEnabled() || forceLoad){
+                    loadPage(start, number, tableState, databaseName);
+                }
+            })
+            .catch(function (error) {
+                console.error(error);
+            });
         };
 
 
-
+        
         $scope.getDatabase = getDatabase;
 
 
