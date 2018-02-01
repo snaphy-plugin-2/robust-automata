@@ -144,6 +144,26 @@ angular.module($snaphy.getModuleName())
         };
 
 
+
+        /**
+         * Will load image to the system
+         * @param {*} rowObject 
+         */
+        $scope.loadImage = function(rowObject){
+            var url = "#";
+            if(rowObject){
+                var imageObj = rowObject["url"];
+                if(imageObj){
+                    if(imageObj.unSignedUrl){
+                        url = imageObj.unSignedUrl;
+                    }
+                }
+            }
+            return url;
+        };
+
+        
+
         $scope.dateInSeconds = function(rowObject, columnHeader, colKey) {
             var date;
             if(colKey){
