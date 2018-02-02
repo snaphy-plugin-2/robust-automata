@@ -185,7 +185,13 @@ angular.module($snaphy.getModuleName())
 
 
 
-
+        /**
+         * Will add Where Query for Inline Header Filter..
+         * @param {*} model 
+         * @param {*} columnName 
+         * @param {*} filterType 
+         * @param {*} schema 
+         */
         $scope.addWhereQuery = function(model, columnName, filterType, schema){
             resetPage = true;
             $scope.where = $scope.where  || {};
@@ -210,6 +216,28 @@ angular.module($snaphy.getModuleName())
                     //Now redraw the table..
                     $scope.refreshData();
                 }
+            }else if (filterType === "arrayOfObject") {
+                if(model){
+                    //First find the data....
+                    if(schema.tables){
+                        var keyName = columnName.replace(/\./, "_");
+                        if(schema.tables[keyName]){
+                            /**
+                             * "newsLabels":{
+                                    "display": true,
+                                    "search": "arrayOfObject",
+                                    "type": "text",
+                                    "propertyName": "name"
+                                }
+                             */
+                            var tableOptions = schema.tables[keyName];
+                            var nestedColumnName = columnName + "."+ tableOptions.propertyName;
+                            $scope.where = prepareWhereQuery($scope.where, filterType, nestedColumnName, model);
+                        }
+                    }
+                }
+                //Now redraw the table..
+                $scope.refreshData();
             }else if(/^related.+/.test(filterType)){
                 if(model){
                     //First find the data....

@@ -1,0 +1,25 @@
+<span>
+    <span ng-if="tableConfig.onClick !== undefined">
+        <!--Display link here..-->
+        <a ui-sref="{{tableConfig.onClick.state}}({{getParams(tableConfig.onClick.params, rowObject)}})">{{getColValue(rowObject, header)}}</a>
+    </span>
+
+    <span ng-if="tableConfig.date">
+        <!--Display link here..-->
+
+        <span
+            data-order="{{dateInSeconds(rowObject, header)}}"
+            data-sort="{{dateInSeconds(rowObject, header)}}"
+            data-search="{{getColValue(rowObject, header)}}" >
+            {{toJsDate(getColValue(rowObject, header) )| date:'MM/dd/yyyy'}}
+        </span>
+    </span>
+
+    <span ng-init="labelType = tableConfig.tag[getColValue(rowObject, header)]" ng-if="tableConfig.tag !== undefined">
+        <span ng-if="getTagInfo(schema.tables, colKey, rowObject, header) !== undefined" class="label" ng-class="getTagInfo(schema.tables, colKey, rowObject, header)" >{{getColValue(rowObject, header)}}</span>
+        <span ng-if="getTagInfo(schema.tables, colKey, rowObject, header) === undefined" class="label label-default">{{getColValue(rowObject, header)}}</span>
+    </span>
+    <span ng-if="tableConfig.tag === undefined && tableConfig.onClick === undefined && !tableConfig.date">
+        {{getColValue(rowObject, header) | cut:true:50:' ...'}}
+    </span>
+</span>

@@ -224,6 +224,15 @@
                                         ng-init="addInlineFilterResetMethod('#automataTable', 'number', inlineSearch, header)"
                                     />
 
+                                    <!-- handling for MultiSearch in Case of ArrayOfObject Search case.. -->
+                                    <input
+                                        ng-model="inlineSearch[header]"
+                                        ng-change="addWhereQuery(inlineSearch[header], header, 'arrayOfObject', schema)"
+                                        class="form-control"
+                                        ng-if="showFilterType(header, schema) === 'arrayOfObject'"
+                                        type="text"
+                                        ng-init="addInlineFilterResetMethod('#automataTable', 'arrayOfObject', inlineSearch, header)"
+                                    />
 
                                     <!--HANDLING FOR SPECIAL RELATED CASE MODEL SEARCH..-->
                                     <input
@@ -234,6 +243,7 @@
                                         
                                         ng-init="addInlineFilterResetMethod('#automataTable', 'related', inlineSearch, header)"
                                     />
+                                   
                                     <select
                                         ng-change="addWhereQuery(inlineSearch[header], header,  'related.select', schema)"
                                         ng-model="inlineSearch[header]"
@@ -312,9 +322,19 @@
                                     </span>
 
                                     <span ng-if="colType === '[object Array]'">
+                                        <span ng-if="tableConfig.search === 'arrayOfObject'">
+                                            <span ng-repeat="arrayData in getColValue(rowObject, header)">
+                                                <span ng-if="checkType(getColValue(rowObject, header), $index)  === '[object Object]'">
+                                                        <span data-sort="arrayData[tableConfig.propertyName]"  data-filter="arrayData[tableConfig.propertyName]" class="label label-default">
+                                                            {{arrayData[tableConfig.propertyName]}}
+                                                        </span>
+                                                        <span ng-if="!$last" style="padding-right:2px;"></span> 
+                                                </span>
+                                            </span>  
+                                        </span>
                                         <!--Do string populated work here...-->
                                         <!-- {{getColValue(rowObject, header)}} -->
-                                        <ul>
+                                        <ul ng-if="tableConfig.search !== 'arrayOfObject'">
                                             <li ng-repeat="arrayData in getColValue(rowObject, header)">
                                                 <span ng-if="checkType(getColValue(rowObject, header), $index)  === '[object Object]'">
                                                     <ul style="padding-left: 0px;">
@@ -329,7 +349,6 @@
                                             </li>
                                         </ul>
                                     </span>
-
 
                                     <!-- In case of Object or RELATED DATA hasOne or BelongTo type data.. -->
                                     <span ng-init="colType = getRelationColumnType (rowObject, header, colKey, colType);
@@ -353,8 +372,6 @@
                                                 <span ng-if="objColType !== '[object Object]'">
                                                    <small><strong>{{key | capitalize }}</strong></small>: {{getColValue(colValue, key)}}
                                                 </span>
-
-
                                             </li>
                                         </ul>
                                         <span ng-if="colType !== '[object Object]' && !tableConfig.image">
