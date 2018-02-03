@@ -2,6 +2,7 @@
   "name": "robustAutomata",
   "version": "1.0.0",
   "dependencies": {
+    "magnific-popup": "~1.1.0",
     "angular-smart-table": "~2.1.7"
   },
   "devDependencies": {},

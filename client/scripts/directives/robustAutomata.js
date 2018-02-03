@@ -25,6 +25,25 @@ angular.module($snaphy.getModuleName())
 }])
 
 
+.directive('snaphyImageZoomr', ['$timeout', function($timeout) {
+    return {
+        restrict: 'A',
+        link: function(scope, element){
+            /*Run the zoom image code.*/
+            jQuery(element).each(function(){
+                jQuery(this).magnificPopup({
+                    delegate: 'a.img-link',
+                    type: 'image',
+                    gallery: {
+                        enabled: true
+                    }
+                });
+            });
+        } //End of Link function...
+    }; // End of return
+}])
+
+
 
 
 /**
