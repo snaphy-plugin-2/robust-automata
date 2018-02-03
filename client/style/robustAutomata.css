@@ -27,10 +27,12 @@
     margin-bottom: 10px !important;
 }
 
--webkit-transition: none !important;
+.no-transition{
+    -webkit-transition: none !important;
     -moz-transition: none !important;
     -o-transition: none !important;
     transition: none !important;
+}
 
 @media screen and (min-width: 768px){
     .content {
