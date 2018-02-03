@@ -356,7 +356,15 @@
                                           ng-if="colType === '[object Object]'">
                                           
                                           <div style="text-align:center" ng-if="tableConfig.image">
-                                            <img  class="img-avatar img-avatar48" ng-src="{{loadImage(colValue)}}" alt="">
+                                                <div snaphy-image-zoomr class="js-gallery">
+                                                    <div class="remove-margin">
+                                                        <a class="img-link no-transition" ng-href="{{loadImage(colValue)}}">
+                                                            <img class="img-avatar img-avatar48 no-transition" ng-src="{{loadImage(colValue)}}" alt="">
+                                                        </a>
+                                                       
+                                                    </div>
+                                                </div>
+                                            <!-- <img  class="img-avatar img-avatar48" ng-src="{{loadImage(colValue)}}" alt=""> -->
                                           </div>
                                           
                                         <!--Do string populated work here...-->
