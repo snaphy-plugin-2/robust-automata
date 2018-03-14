@@ -1,6 +1,7 @@
 {
   "css": {
-    "/robustAutomata/style/robustAutomata.css": "robustAutomataCss"
+    "/robustAutomata/style/robustAutomata.css": "robustAutomataCss",
+    "/static/bower_components/magnific-popup/dist/magnific-popup.css":"ImageMagnifierCSS"
   },
   "js": {
     "/robustAutomata/scripts/routes/robustAutomata.js": "robustAutomataRoute",
