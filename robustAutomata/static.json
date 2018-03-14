@@ -9,7 +9,8 @@
     "/robustAutomata/scripts/services/robustAutomata.js": "robustAutomataServices",
     "/robustAutomata/scripts/services/runTimeDatabase.js": "RunTimeDatabase",
     "/robustAutomata/scripts/filters/robustAutomata.js": "robustAutomataFilters",
-    "/robustAutomata/scripts/directives/robustAutomata.js": "robustAutomataDirectives"
+    "/robustAutomata/scripts/directives/robustAutomata.js": "robustAutomataDirectives",
+    "/static/bower_components/magnific-popup/dist/jquery.magnific-popup.min.js":"ImageMagnifierJS"
   },
   "moduleDependencies": {
     "/static/bower_components/angular-smart-table/dist/smart-table.min.js": "smart-table"
