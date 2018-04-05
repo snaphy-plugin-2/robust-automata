@@ -569,6 +569,34 @@ angular.module($snaphy.getModuleName())
 
 
 
+           /**
+         * Return the params for ui-sref for onClick
+         * @param params
+         * @param rowObject
+         * @returns {*}
+         */
+        $scope.getExternalParam = function(params, rowObject) {
+            var path = "";
+            var data = JSON.parse(JSON.stringify(params));
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    if(rowObject[key]){
+                        var searchKey =  data[key];
+                        if(searchKey){
+                            if(rowObject[searchKey]){
+                                data[key] = rowObject[searchKey];
+                                path = path + "/" + rowObject[searchKey];
+                            }
+                        }
+
+                    }
+                }
+            }
+            return path;
+        };
+
+
+
         /**
          * Event listener for adding reset button to the filters. To be called when reset button is called..
          */
