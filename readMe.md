@@ -37,5 +37,22 @@ module.exports = function(Post) {
 
 
 
+//TO  change the number of items to be displayed in table.
+
+Set value in `table.json`
+
+```
+{
+	settings:{
+		tables:{
+			itemsToDisplay: 10
+		}
+	}
+
+}
+```
+
+
+
 ####Written by Robins Gupta
 

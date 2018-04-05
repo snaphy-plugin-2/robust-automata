@@ -1465,8 +1465,21 @@ angular.module($snaphy.getModuleName())
                 if(!pageInfo){
                     return;
                 }
+
+                let itemsToDisplay = 10;
                 
+                if(schema){
+                    if(schema.settings){
+                        if(schema.settings.tables){
+                            if(schema.settings.tables.itemsToDisplay){
+                                itemsToDisplay = schema.settings.tables.itemsToDisplay;
+                            }
+                        }
+                    }
+                }
+
                 start = pageInfo.start;
+                pageInfo.number = itemsToDisplay;
                 number = pageInfo.number;
                 tableState = pageInfo.tableState;
     
