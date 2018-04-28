@@ -318,11 +318,23 @@
                                             </span>
                                         </span>
 
+                                        <span ng-if="tableConfig.datetime">
+                                                <!--Display link here..-->
+    
+                                                <span
+                                                    data-order="{{dateInSeconds(rowObject, header)}}"
+                                                    data-sort="{{dateInSeconds(rowObject, header)}}"
+                                                    data-search="{{getColValue(rowObject, header)}}" >
+                                                    {{toJsDate(getColValue(rowObject, header) )| date:'MM/dd/yyyy hh:mm a'}}
+                                                </span>
+                                        </span>
+
+
                                         <span ng-init="labelType = tableConfig.tag[getColValue(rowObject, header)]" ng-if="tableConfig.tag !== undefined">
                                             <span ng-if="getTagInfo(schema.tables, colKey, rowObject, header) !== undefined" class="label" ng-class="getTagInfo(schema.tables, colKey, rowObject, header)" >{{getColValue(rowObject, header)}}</span>
                                             <span ng-if="getTagInfo(schema.tables, colKey, rowObject, header) === undefined" class="label label-default">{{getColValue(rowObject, header)}}</span>
                                         </span>
-                                        <span ng-if="tableConfig.tag === undefined && tableConfig.onClick === undefined && !tableConfig.date">
+                                        <span ng-if="tableConfig.tag === undefined && tableConfig.onClick === undefined && !tableConfig.date && !tableConfig.datetime">
                                             {{getColValue(rowObject, header) | cut:true:50:' ...'}}
                                         </span>
                                     </span>
@@ -422,7 +434,7 @@
                                         
 
                                             <!-- Default case -->
-                                            <span ng-if="tableConfig.tag === undefined && !tableConfig.date && !tableConfig.onClick">
+                                            <span ng-if="tableConfig.tag === undefined && !tableConfig.date && !tableConfig.datetime && !tableConfig.onClick">
                                                 {{getRelationColumnValue(rowObject, header, colKey)  | cut:true:50:' ...'}}
                                             </span>
                                         </span>
