@@ -1581,6 +1581,8 @@ angular.module($snaphy.getModuleName())
          * @param ctrl
          */
         $scope.refreshData = function(tableState, ctrl) {
+            //Now set reset page as false
+            resetPage = false;
             if($scope.schema){
                 if($scope.schema.settings){
                     if($scope.schema.settings.tables){
