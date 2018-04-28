@@ -16,6 +16,8 @@ angular.module($snaphy.getModuleName())
         $scope.rowListValues = $scope.rowListValues || [];
         //Schema of the database
         $scope.schema = $scope.schema  || {};
+        //Default Pagination
+        $scope.defaultPageToDisplay = 10;
         /*Data for save form modal*/
         $scope.saveFormData = $scope.saveFormData || {};
         //Initializing scope //for array..
@@ -1494,7 +1496,7 @@ angular.module($snaphy.getModuleName())
                     return;
                 }
 
-                let itemsToDisplay = 10;
+                let itemsToDisplay = $scope.defaultPageToDisplay;
                 
                 if(schema){
                     if(schema.settings){
@@ -1505,6 +1507,8 @@ angular.module($snaphy.getModuleName())
                         }
                     }
                 }
+
+                $scope.defaultPageToDisplay = itemsToDisplay;
 
                 start = pageInfo.start;
                 pageInfo.number = itemsToDisplay;
