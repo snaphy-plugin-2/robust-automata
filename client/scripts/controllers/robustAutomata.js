@@ -358,6 +358,8 @@ angular.module($snaphy.getModuleName())
                         var obj = {};
                         obj[columnName] = {"gte" : new Date(data) };
                         where.and.push(obj);
+                    }else if(searchType === "id"){
+                        where[columnName] = data;
                     }else{
                         where[columnName] = {
                             like : data
@@ -475,7 +477,7 @@ angular.module($snaphy.getModuleName())
                     }
                         
                 });
-            }else if (type === "text" || type === "number" || type === "date" || type === 'related') {
+            }else if (type === "text" || type === "number" || type === "date" || type === 'related' || type=== 'id') {
                 $scope.addResetMethod(function(){
                     $timeout(function(){
                         //$($(element).find('input')).val("");

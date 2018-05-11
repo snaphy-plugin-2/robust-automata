@@ -193,6 +193,14 @@
                                         type="text"
                                         st-search="{{header}}"
                                     />
+                                    <input
+                                        ng-init="addInlineFilterResetMethod('#automataTable', 'id', inlineSearch, header)"
+                                        class="form-control"
+                                        ng-model="inlineSearch[header]"
+                                        ng-if="showFilterType(header, schema) === 'id'"
+                                        type="text"
+                                        ng-change="addWhereQuery(inlineSearch[header], header,  'select')"
+                                    />
                                     <select
                                         ng-change="addWhereQuery(inlineSearch[header], header,  'select')"
                                         ng-model="inlineSearch[header]"
