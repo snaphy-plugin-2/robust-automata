@@ -4,8 +4,8 @@ angular.module($snaphy.getModuleName())
 
 //Controller for robustAutomataControl ..
 .controller('robustAutomataControl',
-    ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q', '$rootScope', 'RunTimeDatabase', 'LoginServices',
-    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q, $rootScope, RunTimeDatabase, LoginServices) {
+    ['$scope', '$stateParams', 'Database', 'Resource', '$timeout', 'SnaphyTemplate', '$state', 'ImageUploadingTracker', '$filter',  '$q', '$rootScope', 'RunTimeDatabase', 'LoginServices', '$window',
+    function($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q, $rootScope, RunTimeDatabase, LoginServices, $window) {
         //Checking if default templeting feature is enabled..
 
 
@@ -80,6 +80,10 @@ angular.module($snaphy.getModuleName())
         RunTimeDatabase.load()
             .then(function (list) {
                 $scope.databasesList = list;
+                $scope.isGroup = $window.STATIC_DATA.isGroup;
+                if($window.STATIC_DATA.isGroup){
+                    $scope.groups = $window.STATIC_DATA.groups;
+                }
             })
             .catch(function (error) {
                 //Ignore..
