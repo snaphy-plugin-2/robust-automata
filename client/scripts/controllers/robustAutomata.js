@@ -1011,6 +1011,17 @@ angular.module($snaphy.getModuleName())
                                                     var keyValue = value.replace(/\$user\./, "");
                                                     if(user[keyValue]){
                                                         formModel[key] = user[keyValue];
+                                                        //Check if key is not a relation property..
+                                                        var relPattern = /.+Id/;
+                                                        if(relPattern.test(key)){
+                                                            var relationName = key.replace("Id", "");
+                                                            if($scope.schema.relations && $scope.schema.relations.belongsTo.length){
+                                                                if($scope.schema.relations.belongsTo.indexOf(relationName) !== -1){
+                                                                    //Add relation value also..
+                                                                    formModel[relationName] = user;
+                                                                }
+                                                            }
+                                                        }
                                                     }
                                                 }else{
                                                     formModel[key] = value;
