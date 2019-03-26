@@ -30,12 +30,16 @@ angular.module($snaphy.getModuleName())
                 $scope.currentState = currentState;
                 if ($scope.currentState || $scope.currentState !== "") {
                     var elementList = document.getElementsByClassName("stateHolder");
-                    if (elementList && elementList.length)
+                    if (elementList && elementList.length){
                         for (var i = 0; i < elementList.length; i++) {
                             elementList[i].classList.remove("active");
                         }
-                    document.getElementById($scope.currentState).classList.add("active");
+                        if(document.getElementById($scope.currentState)){
+                            document.getElementById($scope.currentState).classList.add("active");
+                        }   
+                    }     
                 }
+                
                 var defaultTemplate = $snaphy.loadSettings('robustAutomata', "defaultTemplate");
                 var onSchemaFetched = $snaphy.loadSettings('robustAutomata', "onSchemaFetched");
                 //$scope.databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
