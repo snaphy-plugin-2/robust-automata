@@ -1688,10 +1688,7 @@ angular.module($snaphy.getModuleName())
                     }
 
                     return a;
-                } console.log("Running scheduler")
-                console.log("Running scheduler")
-                console.log("Running scheduler")
-                //Only load if the current scope is automaconsole.log("Running scheduler")ta
+                } 
                 init();
 
 
