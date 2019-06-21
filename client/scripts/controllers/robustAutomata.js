@@ -39,9 +39,10 @@ angular.module($snaphy.getModuleName())
                         }   
                     }     
                 }
-                
-                var defaultTemplate = $snaphy.loadSettings('robustAutomata', "defaultTemplate");
-                var onSchemaFetched = $snaphy.loadSettings('robustAutomata', "onSchemaFetched");
+                //Fetching list of models which is going to be hidden.
+                $scope.HIDDEN_MODELS = $snaphy.loadSettings('robustAutomata', "hiddenModels") || []; 
+                var defaultTemplate  = $snaphy.loadSettings('robustAutomata', "defaultTemplate");
+                var onSchemaFetched  = $snaphy.loadSettings('robustAutomata', "onSchemaFetched");
                 //$scope.databasesList = $snaphy.loadSettings('robustAutomata', "loadDatabases");
                 //Id for tablePanel
                 var tablePanelId = $snaphy.loadSettings('robustAutomata', "tablePanelId");
