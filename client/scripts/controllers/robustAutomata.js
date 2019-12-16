@@ -8,7 +8,7 @@ angular.module($snaphy.getModuleName())
             function ($scope, $stateParams, Database, Resource, $timeout, SnaphyTemplate, $state, ImageUploadingTracker, $filter, $q, $rootScope, RunTimeDatabase, LoginServices, $window) {
                 //Checking if default templeting feature is enabled..
 
-
+                $scope.items = $snaphy.loadSettings('robustAutomata', "loadDatabases");
 
                 //------------------------------------------------------GLOBAL VARIABLE SPACE----------------------------------------------------------
                 var ctrl = $scope;
