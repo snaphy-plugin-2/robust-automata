@@ -61,6 +61,5 @@
 
     .table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th {
         padding: 5px 10px 5px !important;
-        font-size: 14px !important;
     }
 }

@@ -531,7 +531,8 @@
                                     class="btn btn-sm btn-default"
                                     ng-click="saveForm(schema, schema.form,  saveFormData, true, '#addDataModal')">
                                 <i class="fa fa-save"></i>
-                                Save
+                                <span ng-if="schema.settings.form.save.alias">{{schema.settings.form.save.alias}}</span>
+                                <span ng-if="!schema.settings.form.save.alias">Save</span>
                             </button>
                            <!-- <button
                                     ng-disabled="isSavingInProcess"
