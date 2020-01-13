@@ -178,8 +178,8 @@
                                     ng-if = "displayProperties(schema, header)"
                                     ng-repeat="header in schema.header"
                                     ng-style="getHeaderStyle(schema, header)"
-                                    st-sort="{{header}}">
-                                    {{getHeaderTitle(schema, header) | removeDot | underscoreless}}
+                                    st-sort="{{header}}"
+                                    ng-bind-html="getHeaderTitle(schema, header) | removeDot | underscoreless">
                                 </th>
                                 <th class="text-center" style="width:100px;word-wrap:break-word;">Actions</th>
                             </tr>

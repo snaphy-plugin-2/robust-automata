@@ -10,6 +10,7 @@ angular.module($snaphy.getModuleName())
 
                 $scope.items = $snaphy.loadSettings('robustAutomata', "loadDatabases");
 
+
                 //------------------------------------------------------GLOBAL VARIABLE SPACE----------------------------------------------------------
                 var ctrl = $scope;
                 //Storing an instance of table values..
